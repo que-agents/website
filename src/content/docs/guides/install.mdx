@@ -1,0 +1,36 @@
+---
+title: Install
+description: Download que, open it the first time, and put the que command on your PATH.
+---
+
+import Download from '../../../components/Download.astro'
+
+que is in early preview (0.x): used every day by its author, changing fast.
+
+## Download
+
+<Download />
+
+Download the latest `que-<version>-arm64.dmg`, here or from
+[Releases](https://github.com/que-agents/que/releases), and drag que to Applications. It needs
+macOS on Apple Silicon. Prereleases (`-beta.N`) appear on the same releases page for anyone who
+wants the newest build early; the app only offers you stable releases.
+
+## First launch
+
+Builds are not signed yet, so macOS blocks the first launch. Open it anyway from
+**System Settings → Privacy & Security → Open Anyway**, or clear the quarantine flag:
+
+```sh
+xattr -dr com.apple.quarantine /Applications/que.app
+```
+
+## The `que` command
+
+Once que is open, choose **que → Install \'que\' command in PATH** to get the CLI. It links into
+`/usr/local/bin` when that is writable and `~/.local/bin` otherwise.
+
+## What que needs
+
+You also need Claude Code (`claude`) and git on your PATH. With `gh` installed and logged in, que
+shows each workspace's pull request.

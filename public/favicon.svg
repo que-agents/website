@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="100 100 824 824">
+  <!-- que's app icon (que: scripts/make-icon.mjs), cropped to its body: the q and the accent dot. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2a2d34" />
+      <stop offset="1" stop-color="#16181d" />
+    </linearGradient>
+  </defs>
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#bg)" />
+  <g fill="none" stroke="#e8eaee" stroke-width="64">
+    <circle cx="482" cy="472" r="150" />
+    <path d="M632 472V772" stroke-linecap="round" />
+  </g>
+  <circle cx="742" cy="742" r="46" fill="#3fcdb4" />
+</svg>

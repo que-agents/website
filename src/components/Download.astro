@@ -1,0 +1,83 @@
+---
+// The download button for the latest que release. Everything it shows comes
+// from src/data/release.json, which scripts/fetch-release.mjs writes at build time.
+import release from '../data/release.json'
+
+interface Props {
+  /** Line up with a splash page's hero: centred on narrow screens, at the start on wide ones. */
+  hero?: boolean
+}
+
+const { hero = false } = Astro.props
+const base = import.meta.env.BASE_URL.replace(/\/$/, '')
+const date = new Date(release.publishedAt).toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+  timeZone: 'UTC'
+})
+---
+
+<div class:list={['download', 'not-content', { 'under-hero': hero }]}>
+  <div class="row">
+    <a class="button" href={release.dmg.url}>Download for macOS</a>
+    <span class="meta">
+      <a href={release.url}>que {release.version}</a> · <time datetime={release.publishedAt}>{date}</time>
+    </span>
+  </div>
+  <p class="meta">
+    <a href={`${base}/guides/install/#first-launch`}>Apple Silicon · unsigned build</a>
+    {' · '}
+    <a href="https://github.com/que-agents/que/releases">All releases</a>
+  </p>
+</div>
+
+<style>
+  .download {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-block: 1.5rem;
+  }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+  }
+  @media (max-width: 49.99rem) {
+    .under-hero {
+      align-items: center;
+      text-align: center;
+    }
+    .under-hero .row {
+      justify-content: center;
+    }
+  }
+  /* The one primary button on the page: light on dark (que's --inverse). */
+  .button {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--sl-color-white);
+    border-radius: 2px;
+    background: var(--sl-color-white);
+    color: var(--sl-color-black);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .button:hover {
+    border-color: var(--sl-color-gray-2);
+    background: var(--sl-color-gray-2);
+  }
+  .meta {
+    margin: 0;
+    font-family: var(--__sl-font-mono);
+    font-size: var(--sl-text-xs);
+    color: var(--sl-color-gray-3);
+  }
+  .meta a {
+    color: inherit;
+  }
+  .meta a:hover {
+    color: var(--sl-color-text-accent);
+  }
+</style>

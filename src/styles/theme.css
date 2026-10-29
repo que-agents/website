@@ -1,0 +1,75 @@
+/* que's look, from the app's tokens (que: src/renderer/src/styles.css and
+ * docs/design.md): neutral grey surfaces, hairline borders, nearly square
+ * corners, system sans for reading, system mono for code and small labels,
+ * and one teal accent. Starlight's light theme keeps its own greys and only
+ * takes the teal. */
+
+:root {
+  --sl-font:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, 'Helvetica Neue', sans-serif;
+  --sl-font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Dark: Starlight's grey scale runs from text (white, gray-1) down to the
+ * page (black), so que's text tokens fill the top and its surfaces the bottom. */
+:root[data-theme='dark'] {
+  --sl-color-white: #eeeeee; /* --fg: headings, hovered links */
+  --sl-color-gray-1: #eeeeee;
+  --sl-color-gray-2: #c9c9c9; /* --fg-secondary: body text */
+  --sl-color-gray-3: #9b9b9b; /* --fg-muted */
+  --sl-color-gray-4: #6f6f6f; /* --fg-faint */
+  --sl-color-gray-5: #363636; /* --border-strong */
+  --sl-color-gray-6: #111111; /* --bg-side: also code blocks */
+  --sl-color-black: #181818; /* --bg: the content */
+
+  --sl-color-accent-low: #172825; /* the teal at 12% on --bg-side, like que's badges */
+  --sl-color-accent: #3fcdb4;
+  --sl-color-accent-high: #6adcc7;
+  --sl-color-text-accent: #3fcdb4;
+  --sl-color-text-invert: #111111;
+
+  --sl-color-bg-nav: #111111;
+  --sl-color-bg-sidebar: #111111;
+  --sl-color-bg-inline-code: #262626; /* --bg-hover */
+  --sl-color-hairline: #272727; /* --border */
+  --sl-color-hairline-shade: #272727;
+  --sl-color-hairline-light: #363636;
+  --sl-color-backdrop-overlay: rgb(17 17 17 / 0.8);
+}
+
+/* Light: Starlight's own greys, que's teal darkened enough to read on white. */
+:root[data-theme='light'] {
+  --sl-color-accent-low: #d3f4ee;
+  --sl-color-accent: #0f7d6b;
+  --sl-color-accent-high: #0a5146;
+}
+
+/* The current page reads as teal text on a hover-grey row, not a filled block. */
+.sidebar-content a[aria-current='page'],
+.sidebar-content a[aria-current='page']:hover,
+.sidebar-content a[aria-current='page']:focus {
+  color: var(--sl-color-text-accent);
+  background-color: var(--sl-color-gray-6);
+}
+:root[data-theme='dark'] .sidebar-content a[aria-current='page'] {
+  background-color: #262626;
+}
+
+/* Sidebar group labels are small mono labels, as in the app. */
+.sidebar-content .group-label .large {
+  font-family: var(--__sl-font-mono);
+  font-size: 0.6875rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sl-color-gray-3);
+}
+
+/* Nearly square corners: 2px for buttons and inputs, 4px for panels. */
+site-search button[data-open-modal] {
+  border-radius: 2px;
+}
+site-search dialog,
+.pagination-links a {
+  border-radius: 4px;
+}
