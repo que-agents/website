@@ -18,6 +18,14 @@ export default defineConfig({
       expressiveCode: { styleOverrides: { borderRadius: '4px' } },
       sidebar: [
         {
+          label: 'Start here',
+          items: ['guides/overview', 'guides/install', 'guides/first-run']
+        },
+        {
+          label: 'Using que',
+          items: ['guides/quiet-mode', 'guides/configuration', 'guides/cli']
+        },
+        {
           label: 'Reference',
           items: [
             { label: 'CLI reference', slug: 'reference/cli' },
