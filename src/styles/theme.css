@@ -88,6 +88,7 @@ site-search dialog,
 }
 [data-has-hero] .hero h1 {
   font-size: clamp(2.375rem, calc(0.25rem + 5vw), 3.75rem);
+  text-wrap: balance;
   line-height: 1.08;
   letter-spacing: -0.02em;
 }
