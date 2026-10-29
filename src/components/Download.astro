@@ -4,7 +4,7 @@
 import release from '../data/release.json'
 
 interface Props {
-  /** Line up with a splash page's hero: centred on narrow screens, at the start on wide ones. */
+  /** The home page's version: centred, beside a Docs button, with no release line. */
   hero?: boolean
 }
 
@@ -18,19 +18,39 @@ const date = new Date(release.publishedAt).toLocaleDateString('en-US', {
 })
 ---
 
-<div class:list={['download', 'not-content', { 'under-hero': hero }]}>
-  <div class="row">
-    <a class="button" href={release.dmg.url}>Download for macOS</a>
-    <span class="meta">
-      <a href={release.url}>que {release.version}</a> · <time datetime={release.publishedAt}>{date}</time>
-    </span>
-  </div>
-  <p class="meta">
-    <a href={`${base}/guides/install/#first-launch`}>Apple Silicon · unsigned build</a>
-    {' · '}
-    <a href="https://github.com/que-agents/que/releases">All releases</a>
-  </p>
-</div>
+{
+  hero ? (
+    <div class="download hero-actions not-content">
+      <a class="button" href={release.dmg.url}>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path
+            d="M8 2v8M4.5 6.5 8 10l3.5-3.5M3 13h10"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        Download for macOS
+      </a>
+      <a class="button secondary" href={`${base}/guides/overview/`}>Docs</a>
+    </div>
+  ) : (
+    <div class="download not-content">
+      <div class="row">
+        <a class="button" href={release.dmg.url}>Download for macOS</a>
+        <span class="meta">
+          <a href={release.url}>que {release.version}</a> · <time datetime={release.publishedAt}>{date}</time>
+        </span>
+      </div>
+      <p class="meta">
+        <a href={`${base}/guides/install/#first-launch`}>Apple Silicon · unsigned build</a>
+        {' · '}
+        <a href="https://github.com/que-agents/que/releases">All releases</a>
+      </p>
+    </div>
+  )
+}
 
 <style>
   .download {
@@ -44,15 +64,6 @@ const date = new Date(release.publishedAt).toLocaleDateString('en-US', {
     flex-wrap: wrap;
     align-items: center;
     gap: 0.5rem 1rem;
-  }
-  @media (max-width: 49.99rem) {
-    .under-hero {
-      align-items: center;
-      text-align: center;
-    }
-    .under-hero .row {
-      justify-content: center;
-    }
   }
   /* The one primary button on the page: light on dark (que's --inverse). */
   .button {
@@ -79,5 +90,34 @@ const date = new Date(release.publishedAt).toLocaleDateString('en-US', {
   }
   .meta a:hover {
     color: var(--sl-color-text-accent);
+  }
+
+  /* Under the home page's hero: two larger buttons side by side, centred. */
+  .hero-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-block: 0;
+  }
+  .hero-actions .button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    min-height: 44px;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.9375rem;
+    line-height: 1.25;
+  }
+  /* The secondary button: an outline (que's --border-strong) that fills on hover. */
+  .hero-actions .secondary {
+    border-color: var(--sl-color-gray-5);
+    background: transparent;
+    color: var(--sl-color-white);
+    font-weight: 400;
+  }
+  .hero-actions .secondary:hover {
+    border-color: var(--sl-color-gray-5);
+    background: var(--sl-color-bg-inline-code);
   }
 </style>
