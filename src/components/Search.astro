@@ -1,0 +1,9 @@
+---
+// Starlight's search box on every page but the home page, which leads with the
+// download and the docs instead.
+import Default from '@astrojs/starlight/components/Search.astro'
+
+const home = Astro.locals.starlightRoute.id === ''
+---
+
+{!home && <Default {...Astro.props} />}

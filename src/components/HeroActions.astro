@@ -19,7 +19,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '')
     </svg>
     Download for macOS
   </a>
-  <a class="button secondary" href={`${base}/guides/overview/`}>Docs</a>
+  <a class="button secondary" href={`${base}/guides/overview/`}>Documentation</a>
 </div>
 
 <style>
@@ -30,10 +30,20 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '')
     gap: 0.75rem;
     margin-block: 0;
   }
+  /* Too narrow for both side by side: one above the other, the same width. */
+  @media (max-width: 30rem) {
+    .hero-actions {
+      flex-direction: column;
+      align-items: stretch;
+      width: min(100%, 20rem);
+      margin-inline: auto;
+    }
+  }
   /* The primary button: light on dark (que's --inverse). */
   .button {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 0.625rem;
     min-height: 44px;
     padding: 0.75rem 1.25rem;
