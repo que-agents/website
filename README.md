@@ -23,14 +23,14 @@ npm run dev       # the site with hot reload, at http://localhost:4321
 
 ## Where things live
 
-| Path                   | What lives there                                                  |
-| ---------------------- | ----------------------------------------------------------------- |
-| `src/content/docs/`    | The pages, in Markdown or MDX; a file's path is its URL           |
-| `astro.config.mjs`     | The site's settings and the sidebar                               |
-| `src/components/`      | Components pages use, such as the download button                 |
-| `src/styles/theme.css` | que's colours and type, mapped onto Starlight's theme             |
-| `scripts/`             | `fetch-release.mjs`, which pulls the release data described below |
-| `tests/`               | Unit tests                                                        |
+| Path                   | What lives there                                                          |
+| ---------------------- | ------------------------------------------------------------------------- |
+| `src/content/docs/`    | The pages, in Markdown or MDX; `guides/install.mdx` is `/guides/install/` |
+| `astro.config.mjs`     | The site's settings and the sidebar                                       |
+| `src/components/`      | Components pages use, such as the download button                         |
+| `src/styles/theme.css` | que's colours and type, mapped onto Starlight's theme                     |
+| `scripts/`             | `fetch-release.mjs`, which pulls the release data described below         |
+| `tests/`               | Unit tests                                                                |
 
 ## What comes from que
 
