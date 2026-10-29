@@ -17,7 +17,7 @@ npm run dev       # the site with hot reload, at http://localhost:4321
 | `npm run dev`     | Fetch the latest que release, then serve the site with hot reload  |
 | `npm run build`   | Fetch the latest que release, then build the site into `dist/`     |
 | `npm run check`   | Fetch the latest que release, then type-check with `astro check`   |
-| `npm test`        | Unit tests (Vitest) for the release script and the base-path links |
+| `npm test`        | Unit tests (Vitest): the release script, links, the home animation |
 | `npm run lint`    | Check formatting with oxfmt (`npm run format` writes it)           |
 | `npm run preview` | Serve the built `dist/`                                            |
 
@@ -27,7 +27,8 @@ npm run dev       # the site with hot reload, at http://localhost:4321
 | ---------------------- | ------------------------------------------------------------------------- |
 | `src/content/docs/`    | The pages, in Markdown or MDX; `guides/install.mdx` is `/guides/install/` |
 | `astro.config.mjs`     | The site's settings and the sidebar                                       |
-| `src/components/`      | Components pages use, such as the download button                         |
+| `src/components/`      | Components pages use: the download button, the home page's animation      |
+| `src/lib/`             | Plain code the site runs; `day.ts` says what the home animation shows     |
 | `src/styles/theme.css` | que's colours and type, mapped onto Starlight's theme                     |
 | `scripts/`             | `fetch-release.mjs`, which pulls the release data described below         |
 | `tests/`               | Unit tests                                                                |

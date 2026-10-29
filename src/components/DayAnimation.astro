@@ -1,0 +1,1542 @@
+---
+// The home page's "a day with que": a caption above a pixel scene beside que's
+// window, and buttons to pause it and step through it. src/lib/day.ts decides
+// what every tick shows; the script below only writes that into this markup,
+// which is rendered at tick 0 so the page shows a whole frame before the script
+// runs.
+//
+// The scene and the window are drawn at their natural size, 440 × 460 and
+// 650 × 460, and scaled down as a whole when there is less room (see .stage).
+// The animation is always dark, in que's palette, whatever the site's theme.
+import {
+  HOME_BACK,
+  HOME_FRONT,
+  OFFICE_BACK,
+  OFFICE_FRONT,
+  PROJECTS,
+  REPORT_ROWS,
+  SPRITES,
+  STEPS,
+  dayState,
+  type Px
+} from '../lib/day'
+import WorkingMark from './WorkingMark.astro'
+
+const initial = dayState(0)
+const { person, texts } = initial
+const flags = Object.fromEntries(
+  Object.entries(initial.flags)
+    .filter(([, on]) => on)
+    .map(([name]) => [`data-${name}`, ''])
+)
+const presence = (on: boolean) => (on ? '' : undefined)
+const length = (size: Px['w']) => (typeof size === 'number' ? `${size}px` : size)
+const place = (px: Px) =>
+  `left: ${px.x}px; bottom: ${px.y}px; width: ${length(px.w)}; height: ${length(px.h)}` +
+  (px.bg ? `; background: ${px.bg}` : '')
+
+// Paths the window's line icons share: the folder, and the tab row's two split buttons.
+const ICONS = {
+  folder: 'M2 4.5h4l1.5 1.5H14v6.5H2z',
+  splits: ['M8 3v10', 'M2 8h12']
+}
+---
+
+<section class="day not-content" data-day aria-label="A day with que" {...flags}>
+  <ol class="sr-only">
+    {
+      STEPS.map((step) => (
+        <li>
+          {step.time}. {step.caption} {step.shows}
+        </li>
+      ))
+    }
+  </ol>
+
+  <p class="caption" aria-hidden="true" data-pagefind-ignore>
+    {
+      STEPS.map((step, i) => (
+        <span data-caption data-current={presence(i === initial.step)}>
+          {step.caption}
+        </span>
+      ))
+    }
+  </p>
+
+  <div class="stage" aria-hidden="true" data-pagefind-ignore>
+    <div class="panels">
+      <div class="slot slot-scene" data-slot>
+        <div class="scene">
+          <div class="office">
+            {OFFICE_BACK.map((px) => <div class:list={['px', px.cls]} style={place(px)} />)}
+            <div class="figure colleague" style="left: 385px; bottom: 75px">
+              <div class="sprite" style={`box-shadow: ${SPRITES.colleague}`}></div>
+            </div>
+          </div>
+          <div class="home">
+            {HOME_BACK.map((px) => <div class:list={['px', px.cls]} style={place(px)} />)}
+          </div>
+
+          <div
+            class="figure person"
+            data-ref="person"
+            style={`left: ${person.left}px; bottom: ${person.bottom}px; transform: ${person.facing === 'right' ? 'scaleX(-1)' : 'none'}; transition-duration: ${person.walkSeconds}s`}
+          >
+            <div class="sprite" data-ref="sprite" style={`box-shadow: ${SPRITES[person.pose]}`}></div>
+          </div>
+
+          <div class="office">
+            {OFFICE_FRONT.map((px) => <div class:list={['px', px.cls]} style={place(px)} />)}
+            <div class="px desk-screen" style="left: 85px; bottom: 125px; width: 80px; height: 46px">
+              <div class="desk-rows">
+                <div class="px" style="left: 0; top: 0; bottom: 0; width: 22px; background: #111111">
+                </div>
+                {
+                  initial.deskDots.map((tone, i) => (
+                    <Fragment>
+                      <div
+                        class="px"
+                        data-ref="desk-dot"
+                        style={`left: 4px; top: ${8 + i * 7}px; width: 3px; height: 3px; background: var(--${tone})`}
+                      />
+                      <div
+                        class="px"
+                        style={`left: 9px; top: ${9 + i * 7}px; width: 10px; height: 1px; background: #6f6f6f`}
+                      />
+                    </Fragment>
+                  ))
+                }
+                {
+                  [
+                    [8, 40, '#9b9b9b'],
+                    [14, 30, '#6f6f6f'],
+                    [20, 46, '#6f6f6f'],
+                    [26, 22, '#6f6f6f']
+                  ].map(([top, width, bg]) => (
+                    <div
+                      class="px"
+                      style={`left: 27px; top: ${top}px; width: ${width}px; height: 2px; background: ${bg}`}
+                    />
+                  ))
+                }
+              </div>
+              <div
+                class="px desk-quiet"
+                style="left: 38px; top: 21px; width: 4px; height: 4px; background: var(--accent)"
+              >
+              </div>
+            </div>
+            <div class="px chime" style="left: 160px; bottom: 182px">♪</div>
+            <div class="px chime chime-late" style="left: 178px; bottom: 194px">♪</div>
+            <div class="px dim" style="inset: 0"></div>
+          </div>
+          <div class="home">
+            {HOME_FRONT.map((px) => <div class:list={['px', px.cls]} style={place(px)} />)}
+          </div>
+        </div>
+      </div>
+
+      <div class="slot slot-app" data-slot>
+        <div class="app">
+          <div class="lights"><i></i><i></i><i></i></div>
+
+          <div class="board fade">
+            <i class="corner" style="top: 8px; left: 8px"></i>
+            <i class="corner" style="top: 8px; right: 8px"></i>
+            <i class="corner" style="bottom: 8px; left: 8px"></i>
+            <i class="corner" style="bottom: 8px; right: 8px"></i>
+            <div class="board-head">
+              <span class="board-title">
+                <svg width="14" height="15" viewBox="300 290 488 514">
+                  <circle
+                    cx="482"
+                    cy="472"
+                    r="150"
+                    fill="none"
+                    style="stroke: var(--fg-muted)"
+                    stroke-width="64"></circle>
+                  <line
+                    x1="632"
+                    y1="472"
+                    x2="632"
+                    y2="772"
+                    style="stroke: var(--fg-muted)"
+                    stroke-width="64"
+                    stroke-linecap="round"></line>
+                  <circle cx="742" cy="742" r="46" style="fill: var(--accent)"></circle>
+                </svg>
+                <span class="lbl">[ <span data-text="boardLabel">{texts.boardLabel}</span> ]</span>
+              </span>
+              <span class="board-time">
+                <span class="now" data-text="boardNow">{texts.boardNow}</span> · until <span
+                  data-text="boardUntil">{texts.boardUntil}</span
+                >
+              </span>
+            </div>
+            <p class="board-count" data-text="boardCount">{texts.boardCount}</p>
+            <div class="board-rows">
+              {
+                initial.sessions.map((row) => (
+                  <div
+                    class="session board-row"
+                    data-session={row.name}
+                    data-working={presence(row.working)}
+                  >
+                    <span class="mark">
+                      <WorkingMark />
+                      <span class="dot" style="background: var(--neutral)" />
+                    </span>
+                    <span class="name">{row.name}</span>
+                    <span class="project">{row.project}</span>
+                    <span class="spacer" />
+                    <span class="word">{row.word}</span>
+                    <span class="dash">–</span>
+                  </div>
+                ))
+              }
+            </div>
+            <div class="board-foot">
+              <span class="unlock">
+                <svg class="icon" width="12" height="12" viewBox="0 0 16 16">
+                  <rect x="3" y="7" width="10" height="7" rx="1"></rect>
+                  <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0"></path>
+                </svg>
+                Unlock 20 min
+              </span>
+            </div>
+          </div>
+
+          <div class="window fade">
+            <div class="side">
+              <div class="side-top">
+                <svg class="icon" width="14" height="14" viewBox="0 0 16 16">
+                  <circle cx="7" cy="7" r="4.5"></circle>
+                  <path d="m10.5 10.5 3 3" stroke-linecap="round"></path>
+                </svg>
+              </div>
+              <div class="side-head">
+                <span class="lbl">[ SESSIONS ]</span><span class="plus">+</span>
+              </div>
+              <div class="side-shell"><span class="shell-mark">›_</span>zsh</div>
+              <div class="side-head projects">
+                <span class="lbl">[ PROJECTS ]</span>
+                <span class="side-icons">
+                  <svg class="icon faint" width="13" height="13" viewBox="0 0 16 16">
+                    <path d={ICONS.folder} stroke-linejoin="round"></path>
+                  </svg>
+                  <svg class="icon faint" width="13" height="13" viewBox="0 0 16 16">
+                    <path d="M3 4h10M3 8h7M3 12h4" stroke-linecap="round"></path>
+                  </svg>
+                </span>
+              </div>
+              {
+                PROJECTS.map((project) => (
+                  <Fragment>
+                    <div class="side-project">
+                      <svg class="icon" width="13" height="13" viewBox="0 0 16 16">
+                        <path d={ICONS.folder} stroke-linejoin="round" />
+                      </svg>
+                      {project}
+                    </div>
+                    {initial.sessions
+                      .filter((row) => row.project === project)
+                      .map((row) => (
+                        <div
+                          class="session side-row"
+                          data-session={row.name}
+                          data-working={presence(row.working)}
+                          data-selected={presence(row.selected)}
+                        >
+                          <span class="mark">
+                            <WorkingMark />
+                            <span class="dot" style={`background: var(--${row.dot})`} />
+                          </span>
+                          <span class="name" style={`color: var(--${row.text})`}>
+                            {row.name}
+                          </span>
+                        </div>
+                      ))}
+                  </Fragment>
+                ))
+              }
+              <div class="side-foot">
+                <div class="foot-quiet">
+                  <span class="foot-word">Quiet</span>
+                  <span class="pick">30m</span>
+                  <span class="pick one-hour">1h</span>
+                  <span class="pick">2h</span>
+                  <svg class="pointer" width="12" height="16" viewBox="0 0 12 16">
+                    <path
+                      d="M1 1v12l3.2-3 2.3 5 1.8-.8-2.2-4.9H10z"
+                      fill="#eeeeee"
+                      stroke="#111111"
+                      stroke-width="1"></path>
+                  </svg>
+                </div>
+                <div class="foot-unlocked">
+                  <svg
+                    class="icon unlock-icon"
+                    width="12"
+                    height="12"
+                    viewBox="0 0 16 16"
+                    stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <rect x="3" y="7.25" width="10" height="6.5" rx="1"></rect>
+                    <path d="M5.25 7.25V5a2.75 2.75 0 0 1 5.4-.75"></path>
+                  </svg>
+                  <span><span data-text="countdown">{texts.countdown}</span> left</span>
+                  <span class="lock-now">lock now</span>
+                </div>
+                <div class="foot-icons">
+                  <svg class="icon report-icon" width="13" height="13" viewBox="0 0 16 16">
+                    <path d="M3.5 1.5h9v13h-9z"></path>
+                    <path d="M6 5h4M6 8h4M6 11h3"></path>
+                  </svg>
+                  <svg class="icon" width="13" height="13" viewBox="0 0 16 16">
+                    <circle cx="8" cy="8" r="2.2"></circle>
+                    <path
+                      d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M3.4 12.6l1.4-1.4M11.2 4.8l1.4-1.4"
+                      stroke-linecap="round"></path>
+                  </svg>
+                  <span class="spacer"></span>
+                  <span class="usage">5h – wk –</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="main">
+              <div class="report">
+                <div class="report-head">
+                  <span class="lbl">[ REPORT ]</span>
+                  <span class="note">18:00 – 08:00</span>
+                </div>
+                <p class="note">5 sessions · 2 pull requests · 1 waiting for you · 1 unlock</p>
+                <div class="report-rows">
+                  {
+                    REPORT_ROWS.map((row, i) => (
+                      <div class="report-row fade" style={`animation-delay: ${i * 0.15}s`}>
+                        <span class="dot" style={`background: var(--${row.dot})`} />
+                        <span class="name">{row.name}</span>
+                        <span class="project">{row.project}</span>
+                        <span class="spacer" />
+                        <span class="tag" style={`color: var(--${row.tagTone})`}>
+                          {row.tag}
+                        </span>
+                      </div>
+                    ))
+                  }
+                </div>
+                <p class="note">unlock 22:14 · 20 min</p>
+              </div>
+
+              <div class="term-view">
+                <div class="tabs">
+                  <div class="tab">claude</div>
+                  <div class="tab-plus">+</div>
+                  <span class="spacer"></span>
+                  <div class="tab-tools">
+                    {
+                      ICONS.splits.map((split) => (
+                        <svg class="icon faint" width="13" height="13" viewBox="0 0 16 16">
+                          <rect x="2" y="3" width="12" height="10" rx="1" />
+                          <path d={split} />
+                        </svg>
+                      ))
+                    }
+                  </div>
+                </div>
+                <div class="term">
+                  <div class="scroll">
+                    {/* Written by the script; at tick 0 the report view hides the terminal. */}
+                    <div class="lines" data-ref="lines"></div>
+                    <div class="permission fade">
+                      <div class="ask">Bash command</div>
+                      <div>{' '}</div>
+                      <div class="fg">{'  npm run migrate'}</div>
+                      <div class="muted">{'  Apply the invoices migration'}</div>
+                      <div>{' '}</div>
+                      <div class="fg">Do you want to proceed?</div>
+                      <div class="ask-choice">❯ 1. Yes</div>
+                      <div>{"  2. Yes, and don't ask again for npm run"}</div>
+                      <div>{'     migrate commands in this project'}</div>
+                      <div>{'  3. No, and tell Claude what to do'}</div>
+                      <div>{'     differently (esc)'}</div>
+                    </div>
+                  </div>
+                  <div class="status">
+                    <span class="spin" data-text="spin">{texts.spin}</span>
+                    <span class="faint" data-text="seconds">{texts.seconds}</span>
+                  </div>
+                  <div class="input-view">
+                    <div class="input">
+                      <span class="muted">{'> '}</span>
+                      <span data-text="input">{texts.input}</span>
+                      <span class="cursor"></span>
+                    </div>
+                    <div class="mode">
+                      <span class="mode-on">{'  ⏵⏵ accept edits on'}</span>
+                      <span class="faint">{' (shift+tab to cycle)'}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="rail">
+              <div class="rail-top">«</div>
+              <div class="rail-rule"></div>
+              <svg class="icon" width="14" height="14" viewBox="0 0 16 16">
+                <circle cx="4.5" cy="3.5" r="1.5"></circle>
+                <circle cx="4.5" cy="12.5" r="1.5"></circle>
+                <circle cx="11.5" cy="12.5" r="1.5"></circle>
+                <path d="M4.5 5v6M11.5 11V6.5L9.5 4.5"></path>
+              </svg>
+              <span class="rail-count" data-text="prs">{texts.prs}</span>
+              <svg class="icon" width="14" height="14" viewBox="0 0 16 16">
+                <path d="M3.5 1.5h6l3 3v10h-9z" stroke-linejoin="round"></path>
+                <path d="M6 7h4M8 5v4M6 11.5h4"></path>
+              </svg>
+              <span class="rail-count" data-text="changes">{texts.changes}</span>
+              <svg class="icon" width="14" height="14" viewBox="0 0 16 16">
+                <path d={ICONS.folder} stroke-linejoin="round"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="controls">
+    <button type="button" data-prev aria-label="Previous step">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path
+          d="M10 3.5 5.5 8l4.5 4.5"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"></path>
+      </svg>
+    </button>
+    <button type="button" data-play aria-label="Pause the animation">
+      <svg class="icon-pause" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M5.5 3.5v9M10.5 3.5v9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+        ></path>
+      </svg>
+      <svg class="icon-play" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M5.5 3.25v9.5L13 8z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"
+        ></path>
+      </svg>
+    </button>
+    <button type="button" data-next aria-label="Next step">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path
+          d="M6 3.5 10.5 8 6 12.5"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"></path>
+      </svg>
+    </button>
+  </div>
+  <p class="sr-only" role="status" data-announce></p>
+</section>
+
+<script>
+  import { LOOP_TICKS, SPRITES, STEPS, TICK_MS, dayState, stepOf, stepTick } from '../lib/day'
+  import type { DayState, TermLine } from '../lib/day'
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-day]')) {
+    mount(root)
+  }
+
+  function mount(root: HTMLElement) {
+    const find = (scope: Element, selector: string): HTMLElement => {
+      const el = scope.querySelector<HTMLElement>(selector)
+      if (!el) {
+        throw new Error(`DayAnimation: nothing matches ${selector}`)
+      }
+      return el
+    }
+    const ref = (name: string) => find(root, `[data-ref="${name}"]`)
+    const person = ref('person')
+    const sprite = ref('sprite')
+    const lines = ref('lines')
+    const deskDots = [...root.querySelectorAll<HTMLElement>('[data-ref="desk-dot"]')]
+    const texts = new Map(
+      [...root.querySelectorAll<HTMLElement>('[data-text]')].map((el) => [el.dataset.text, el])
+    )
+    const sessions = new Map(
+      [...root.querySelectorAll<HTMLElement>('.side-row')].map((side) => {
+        const name = side.dataset.session ?? ''
+        const board = find(root, `.board-row[data-session="${name}"]`)
+        return [
+          name,
+          {
+            side,
+            dot: find(side, '.dot'),
+            name: find(side, '.name'),
+            board,
+            word: find(board, '.word')
+          }
+        ]
+      })
+    )
+    const captions = [...root.querySelectorAll<HTMLElement>('[data-caption]')]
+    let drawnLines = ''
+
+    // What each element was last given, so a tick touches the page only where
+    // something changed.
+    const written = new WeakMap<Element, Map<string, string | null>>()
+    const changed = (el: Element, key: string, value: string | null) => {
+      const last = written.get(el) ?? new Map<string, string | null>()
+      written.set(el, last)
+      if (last.has(key) && last.get(key) === value) {
+        return false
+      }
+      last.set(key, value)
+      return true
+    }
+    const setText = (el: HTMLElement, value: string) => {
+      if (changed(el, 'text', value)) {
+        el.textContent = value
+      }
+    }
+    const setStyle = (el: HTMLElement, property: string, value: string) => {
+      if (changed(el, `style ${property}`, value)) {
+        el.style.setProperty(property, value)
+      }
+    }
+    const setAttr = (el: Element, name: string, value: string | null) => {
+      if (changed(el, `attr ${name}`, value)) {
+        if (value === null) {
+          el.removeAttribute(name)
+        } else {
+          el.setAttribute(name, value)
+        }
+      }
+    }
+    const presence = (on: boolean) => (on ? '' : null)
+
+    function lineElement(line: TermLine) {
+      const el = document.createElement('div')
+      el.className = 'line'
+      el.dataset.kind = line.kind
+      const pre = document.createElement('span')
+      pre.className = 'pre'
+      pre.textContent = line.pre
+      const text = document.createElement('span')
+      text.className = 'text'
+      text.textContent = line.text
+      el.append(pre, text)
+      return el
+    }
+
+    function draw(s: DayState) {
+      for (const [name, on] of Object.entries(s.flags)) {
+        setAttr(root, `data-${name}`, presence(on))
+      }
+      captions.forEach((caption, i) => setAttr(caption, 'data-current', presence(i === s.step)))
+      for (const [name, value] of Object.entries(s.texts)) {
+        const el = texts.get(name)
+        if (el) {
+          setText(el, value)
+        }
+      }
+
+      const p = s.person
+      setStyle(person, 'transition-duration', `${p.walkSeconds}s`)
+      setStyle(person, 'left', `${p.left}px`)
+      setStyle(person, 'bottom', `${p.bottom}px`)
+      setStyle(person, 'transform', p.facing === 'right' ? 'scaleX(-1)' : 'none')
+      setStyle(sprite, 'box-shadow', SPRITES[p.pose])
+      deskDots.forEach((dot, i) => setStyle(dot, 'background', `var(--${s.deskDots[i]})`))
+
+      for (const row of s.sessions) {
+        const els = sessions.get(row.name)
+        if (!els) {
+          continue
+        }
+        setAttr(els.side, 'data-working', presence(row.working))
+        setAttr(els.side, 'data-selected', presence(row.selected))
+        setStyle(els.dot, 'background', `var(--${row.dot})`)
+        setStyle(els.name, 'color', `var(--${row.text})`)
+        setAttr(els.board, 'data-working', presence(row.working))
+        setText(els.word, row.word)
+      }
+
+      const key = s.lines.map((line) => `${line.kind} ${line.pre}${line.text}`).join('\n')
+      if (key !== drawnLines) {
+        drawnLines = key
+        lines.replaceChildren(...s.lines.map(lineElement))
+      }
+    }
+
+    // The clock runs while the animation plays, is on screen and its tab is
+    // showing. Paused, it stays on its frame. With reduced motion it starts
+    // paused, on the first step's settled frame.
+    const play = find(root, 'button[data-play]')
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)')
+    let paused = reduced.matches
+    let tick = stepTick(0, paused)
+    let timer: number | undefined
+    let onScreen = false
+
+    const show = (t: number) => {
+      tick = t
+      draw(dayState(t))
+    }
+    const stop = () => {
+      window.clearInterval(timer)
+      timer = undefined
+    }
+    const sync = () => {
+      const run = !paused && onScreen && !document.hidden
+      if (run && timer === undefined) {
+        timer = window.setInterval(() => show((tick + 1) % LOOP_TICKS), TICK_MS)
+      } else if (!run && timer !== undefined) {
+        stop()
+      }
+    }
+    const setPaused = (value: boolean) => {
+      paused = value
+      root.toggleAttribute('data-paused', paused)
+      play.setAttribute('aria-label', paused ? 'Play the animation' : 'Pause the animation')
+      sync()
+    }
+    const jump = (step: number) => {
+      stop()
+      show(stepTick(step, paused))
+      sync()
+    }
+
+    // Stepping by hand says where it landed, for screen readers; the clock's own
+    // steps stay quiet.
+    const announce = find(root, '[data-announce]')
+    const stepBy = (by: number) => {
+      const to = (stepOf(tick) + by + STEPS.length) % STEPS.length
+      jump(to)
+      announce.textContent = `${STEPS[to].time}. ${STEPS[to].caption}`
+    }
+
+    play.addEventListener('click', () => setPaused(!paused))
+    find(root, 'button[data-prev]').addEventListener('click', () => stepBy(-1))
+    find(root, 'button[data-next]').addEventListener('click', () => stepBy(1))
+    reduced.addEventListener('change', () => {
+      setPaused(reduced.matches)
+      if (paused) {
+        jump(stepOf(tick))
+      }
+    })
+    document.addEventListener('visibilitychange', sync)
+    new IntersectionObserver((entries) => {
+      onScreen = entries[entries.length - 1].isIntersecting
+      sync()
+    }).observe(root)
+
+    // Each panel is scaled to the width its slot gets from the CSS below. Scaled,
+    // the sprites' blocks overlap a little (--seam) so no hairlines show between them.
+    const fit = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const slot = entry.target as HTMLElement
+        const panel = slot.firstElementChild as HTMLElement
+        const scale = entry.contentRect.width / panel.offsetWidth
+        slot.style.setProperty('--scale', String(scale))
+        slot.style.setProperty('--seam', Math.abs(scale - 1) < 0.001 ? '0px' : '0.5px')
+      }
+    })
+    root.querySelectorAll('[data-slot]').forEach((slot) => fit.observe(slot))
+
+    setPaused(paused)
+    show(tick)
+  }
+</script>
+
+<style>
+  .day {
+    /* que's dark tokens, fixed on purpose (the animation stays dark in both site themes), not the site theme's variables.
+       The caption and the pause button sit on the page, so they take the site's. */
+    --bg: #181818;
+    --bg-side: #111111;
+    --bg-active: #2c2c2c;
+    --border: #272727;
+    --border-strong: #363636;
+    --fg: #eeeeee;
+    --fg-secondary: #c9c9c9;
+    --fg-muted: #9b9b9b;
+    --fg-faint: #6f6f6f;
+    --accent: #3fcdb4;
+    --attention: #f99c00;
+    --good: #34c26b;
+    --neutral: #7a7a7a;
+    /* Claude Code's own terminal colours. */
+    --cc-brand: #d77757;
+    --cc-tool: #4eba65;
+    --cc-ask: #b1b5f5;
+    --cc-ask-border: #8f93d8;
+    --cc-mode: #b48ead;
+    --cc-input-border: #4a4a4a;
+    --cc-prompt-bg: #242424;
+    --mono: var(--__sl-font-mono);
+
+    position: relative;
+    margin-top: 3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-bottom: 46px;
+    color: var(--fg);
+    font-family: var(--__sl-font);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* The home page gives the animation its natural width. */
+  :global(.sl-container:has([data-day])) {
+    max-width: 1110px;
+  }
+
+  /* What is on and off: dayState()'s flags, as data attributes on .day. */
+  .day[data-home] .office,
+  .day:not([data-home]) .home,
+  .day:not([data-night]) .stars,
+  .day:not([data-colleague]) .colleague,
+  .day:not([data-mug]) .mug,
+  .day:not([data-chime]) .chime,
+  .day[data-board] .desk-rows,
+  .day:not([data-board]) .desk-quiet,
+  .day[data-board] .window,
+  .day:not([data-board]) .board,
+  .day[data-unlocked] .foot-quiet,
+  .day:not([data-unlocked]) .foot-unlocked,
+  .day:not([data-pointer]) .pointer,
+  .day[data-report] .term-view,
+  .day:not([data-report]) .report,
+  .day[data-permission] .input-view,
+  .day:not([data-permission]) .permission,
+  .day:not([data-status]) .status,
+  .session[data-working] .dot,
+  .session:not([data-working]) :global(.wm) {
+    display: none;
+  }
+
+  /* The stage: a row at natural size from 1110px, scaled as a whole below it,
+     and the scene above the window below 700px, each fitted to the width.
+     The slots take the scaled size; the script sets --scale to match. */
+  .stage {
+    container-type: inline-size;
+  }
+  .stage * {
+    box-sizing: content-box;
+  }
+  .panels {
+    --unit: calc(min(100cqw, 1110px) / 1110);
+    display: flex;
+    justify-content: center;
+    gap: calc(20 * var(--unit));
+  }
+  /* A slot clips its panel, which overflows it until the script has scaled it,
+     so the page never scrolls sideways. The window's shadow is the slot's, so
+     nothing clips it. */
+  .slot {
+    position: relative;
+    flex: none;
+    overflow: hidden;
+  }
+  .slot-app {
+    border-radius: calc(10px * var(--scale, 1));
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+  }
+  .slot-scene {
+    width: calc(440 * var(--unit));
+    height: calc(460 * var(--unit));
+  }
+  .slot-app {
+    width: calc(650 * var(--unit));
+    height: calc(460 * var(--unit));
+  }
+  @container (width < 700px) {
+    .panels {
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+    .slot-scene {
+      width: min(100cqw, 440px);
+      height: calc(min(100cqw, 440px) * 460 / 440);
+    }
+    .slot-app {
+      width: min(100cqw, 650px);
+      height: calc(min(100cqw, 650px) * 460 / 650);
+    }
+  }
+  .scene,
+  .app {
+    position: absolute;
+    top: 0;
+    left: 0;
+    box-sizing: border-box;
+    height: 460px;
+    overflow: hidden;
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    transform: scale(var(--scale, 1));
+    transform-origin: 0 0;
+  }
+
+  /* The scene: 5px pixels, positioned from the floor up. */
+  .scene {
+    width: 440px;
+  }
+  .px {
+    position: absolute;
+  }
+  /* The office by day: dusty blue walls, a wood floor, a pale sky. At six it
+     fades to the night's greys. */
+  .office {
+    --wall: #4d5b6b;
+    --floor: #5a4a3c;
+    --skirting: #6b5a48;
+    --sky: #9fbfd6;
+    --frame: #3c4757;
+  }
+  .day[data-night] .office {
+    --wall: #232323;
+    --floor: #1a1a1a;
+    --skirting: var(--bg-active);
+    --sky: #0e1013;
+    --frame: #3a3a3a;
+  }
+  .wall {
+    background: var(--wall);
+  }
+  .floor {
+    background: var(--floor);
+  }
+  .skirting {
+    background: var(--skirting);
+  }
+  .sky {
+    box-sizing: border-box;
+    border: 5px solid var(--frame);
+    background: var(--sky);
+  }
+  .mullion {
+    background: var(--frame);
+  }
+  .wall,
+  .floor,
+  .skirting,
+  .sky,
+  .mullion {
+    transition:
+      background 1.5s ease,
+      border-color 1.5s ease;
+  }
+  .home-window {
+    box-sizing: border-box;
+    border: 5px solid #3a3836;
+  }
+  .lamp-glow {
+    border-radius: 50%;
+    background: radial-gradient(rgba(230, 200, 140, 0.16), rgba(230, 200, 140, 0) 70%);
+  }
+  .figure {
+    position: absolute;
+    width: 50px;
+    height: 80px;
+  }
+  .person {
+    transition: left 0s linear;
+  }
+  .sprite {
+    position: absolute;
+    left: -5px;
+    top: -5px;
+    width: 5px;
+    height: 5px;
+  }
+  .desk-screen {
+    overflow: hidden;
+    background: #181818;
+    transition: background 0.8s ease;
+  }
+  .day[data-board] .desk-screen {
+    background: #0c0c0c;
+  }
+  .desk-quiet {
+    animation: day-blinkpx 1.2s steps(2) infinite;
+  }
+  .chime {
+    font-family: var(--mono);
+    font-size: 20px;
+    line-height: 1;
+    color: var(--good);
+    animation: day-floatup 1.4s ease-out both;
+  }
+  /* A second, smaller note, a beat after the first. */
+  .chime-late {
+    font-size: 16px;
+    animation-delay: 0.35s;
+  }
+  .dim {
+    background: #000000;
+    opacity: 0;
+    transition: opacity 1.5s ease;
+    pointer-events: none;
+  }
+  .day[data-dim] .dim {
+    opacity: 0.4;
+  }
+  .laptop {
+    background: #2a2a2a;
+    box-shadow: 0 0 0 0 rgba(63, 205, 180, 0);
+    transition:
+      background 0.8s ease,
+      box-shadow 0.8s ease;
+  }
+  .day[data-unlocked] .laptop {
+    background: #bff3e9;
+    box-shadow: 0 0 22px 8px rgba(63, 205, 180, 0.35);
+  }
+
+  /* The app window. */
+  .app {
+    width: 650px;
+    background: var(--bg-side);
+    font-size: 12px;
+  }
+  .lights {
+    position: absolute;
+    top: 13px;
+    left: 13px;
+    z-index: 3;
+    display: flex;
+    gap: 7px;
+  }
+  .lights i {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: #3a3a3a;
+  }
+  .fade {
+    animation: day-fadein 0.5s ease both;
+  }
+  /* The window's line icons: one stroke, muted, or faint with .faint. */
+  .icon {
+    fill: none;
+    stroke: var(--fg-muted);
+    stroke-width: 1.5;
+  }
+  .icon.faint {
+    stroke: var(--fg-faint);
+  }
+  .report-icon {
+    stroke: currentColor;
+  }
+  .lbl {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--fg-faint);
+  }
+  .spacer {
+    flex: 1;
+  }
+  .mark {
+    width: 10px;
+    display: flex;
+    justify-content: center;
+  }
+  .dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    flex: none;
+    margin: 0 1.5px;
+  }
+  .project,
+  .note,
+  .board-time,
+  .board-count,
+  .word,
+  .dash,
+  .unlock,
+  .tag {
+    font-family: var(--mono);
+    font-size: 11px;
+  }
+  .project,
+  .dash {
+    color: var(--fg-faint);
+  }
+  .note {
+    margin: 0;
+    color: var(--fg-muted);
+  }
+
+  /* The quiet board. */
+  .board {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-sizing: border-box;
+    padding: 44px 26px 20px;
+    background: var(--bg-side);
+  }
+  .corner {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: var(--fg-faint);
+  }
+  .board-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .board-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+  .board-title .lbl,
+  .board-time,
+  .board-count,
+  .word,
+  .unlock {
+    color: var(--fg-muted);
+  }
+  .board-time .now {
+    color: var(--fg-secondary);
+  }
+  .board-count {
+    margin: 0;
+  }
+  .board-rows {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--border);
+  }
+  .board-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .board-row .name {
+    color: var(--fg-secondary);
+    font-size: 12.5px;
+  }
+  .word {
+    width: 60px;
+  }
+  .board-foot {
+    margin-top: auto;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .unlock {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  /* The app: sidebar, main column, review rail. */
+  .window {
+    position: absolute;
+    inset: 0;
+    display: flex;
+  }
+  .side {
+    position: relative;
+    width: 196px;
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    padding: 0 8px;
+    background: var(--bg-side);
+    border-right: 1px solid var(--border);
+  }
+  .side-top {
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 4px;
+  }
+  .side-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 6px;
+  }
+  .side-head.projects {
+    padding: 10px 6px 4px;
+  }
+  .plus {
+    color: var(--fg-muted);
+    font-size: 14px;
+    line-height: 1;
+  }
+  .side-icons {
+    display: flex;
+    gap: 8px;
+  }
+  .side-shell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 6px;
+    color: var(--fg-secondary);
+  }
+  .shell-mark {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--fg-faint);
+  }
+  .side-project {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 6px 3px;
+    color: var(--fg-muted);
+  }
+  .side-row {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 4px 6px;
+    border-radius: 4px;
+  }
+  .side-row[data-selected] {
+    background: var(--bg-active);
+  }
+  .side-row .name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .side-foot {
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    padding: 9px 6px 10px;
+    border-top: 1px solid var(--border);
+  }
+  .foot-quiet,
+  .foot-unlocked {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .foot-quiet {
+    position: relative;
+  }
+  /* Unlocked, as que draws it: an open padlock and the time left in the accent,
+     lock now faint at the right end, all in the mono. */
+  .foot-unlocked {
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent);
+  }
+  .unlock-icon {
+    flex: none;
+    stroke: currentColor;
+  }
+  .lock-now {
+    margin-left: auto;
+    color: var(--fg-faint);
+  }
+  .foot-word {
+    color: var(--fg-secondary);
+    font-size: 12.5px;
+  }
+  .pick,
+  .usage {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--fg-muted);
+  }
+  .one-hour {
+    border-radius: 2px;
+    padding: 0 3px;
+  }
+  .day[data-pointer] .one-hour {
+    color: var(--fg);
+  }
+  .day[data-pressed] .one-hour {
+    background: var(--bg-active);
+  }
+  .pointer {
+    position: absolute;
+    left: 82px;
+    top: 8px;
+  }
+  .foot-icons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--fg-muted);
+  }
+  .day[data-report] .report-icon {
+    color: var(--fg);
+  }
+  .usage {
+    color: var(--fg-faint);
+  }
+
+  .main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+  }
+  .report {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 46px 22px 18px;
+  }
+  .report-head {
+    display: flex;
+    justify-content: space-between;
+  }
+  .report-head .lbl {
+    color: var(--fg-muted);
+  }
+  .report-rows {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px dashed var(--border);
+  }
+  .report-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--border);
+  }
+  .report-row .name {
+    color: var(--fg);
+    font-size: 12.5px;
+  }
+
+  /* The Claude Code terminal. */
+  .term-view {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .tabs {
+    height: 38px;
+    flex: none;
+    display: flex;
+    align-items: stretch;
+    padding-left: 8px;
+    background: var(--bg-side);
+    border-bottom: 1px dashed var(--border);
+  }
+  .tab {
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    padding: 0 14px;
+    color: var(--fg);
+    border-bottom: 2px solid var(--accent);
+  }
+  .tab-plus {
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    color: var(--fg-muted);
+    font-size: 15px;
+  }
+  .tab-tools {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-right: 12px;
+  }
+  .term {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 14px;
+    font-family: var(--mono);
+    font-size: 11px;
+    line-height: 1.6;
+    color: var(--fg-secondary);
+  }
+  /* Like a terminal: the newest line at the bottom, the oldest scrolled off the top. */
+  .scroll {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+  .lines,
+  .permission {
+    flex: none;
+  }
+  .lines :global(.line) {
+    white-space: pre;
+    overflow: hidden;
+  }
+  .lines :global(.line[data-kind='title'] .pre),
+  .lines :global(.line[data-kind='logo'] .pre) {
+    color: var(--cc-brand);
+  }
+  .lines :global(.line[data-kind='title'] .text),
+  .lines :global(.line[data-kind='tool'] .text) {
+    color: var(--fg);
+    font-weight: 600;
+  }
+  .lines :global(.line[data-kind='user']) {
+    background: var(--cc-prompt-bg);
+  }
+  .lines :global(.line[data-kind='user'] .pre) {
+    color: var(--fg-muted);
+  }
+  .lines :global(.line[data-kind='say'] .pre),
+  .lines :global(.line[data-kind='say'] .text) {
+    color: var(--fg);
+  }
+  .lines :global(.line[data-kind='tool'] .pre) {
+    color: var(--cc-tool);
+  }
+  .lines :global(.line[data-kind='result'] .pre) {
+    color: var(--fg-faint);
+  }
+  .lines :global(.line[data-kind='logo'] .text),
+  .lines :global(.line[data-kind='result'] .text),
+  .lines :global(.line[data-kind='more'] .text) {
+    color: var(--fg-muted);
+  }
+  .permission {
+    margin-top: 8px;
+    padding: 8px 12px;
+    overflow: hidden;
+    border: 1px solid var(--cc-ask-border);
+    border-radius: 6px;
+  }
+  .permission div {
+    white-space: pre;
+  }
+  .ask {
+    color: var(--cc-ask);
+    font-weight: 600;
+  }
+  .ask-choice {
+    color: var(--cc-ask);
+  }
+  .fg {
+    color: var(--fg);
+  }
+  .muted {
+    color: var(--fg-muted);
+  }
+  .faint {
+    color: var(--fg-faint);
+  }
+  .status,
+  .input,
+  .mode {
+    display: flex;
+    overflow: hidden;
+    white-space: pre;
+  }
+  .spin {
+    color: var(--cc-brand);
+  }
+  .input {
+    align-items: center;
+    padding: 4px 8px;
+    border: 1px solid var(--cc-input-border);
+    border-radius: 6px;
+    color: var(--fg);
+  }
+  .cursor {
+    width: 7px;
+    height: 13px;
+    margin-left: 2px;
+    background: var(--accent);
+    animation: day-blink 1s steps(1) infinite;
+  }
+  .mode {
+    font-size: 10.5px;
+  }
+  .mode-on {
+    color: var(--cc-mode);
+  }
+
+  .rail {
+    width: 38px;
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: var(--bg-side);
+    border-left: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--fg-faint);
+  }
+  .rail-top {
+    height: 38px;
+    display: flex;
+    align-items: center;
+    color: var(--fg-muted);
+    font-size: 13px;
+  }
+  .rail-rule {
+    width: 100%;
+    margin-bottom: 8px;
+    border-top: 1px solid var(--border);
+  }
+  .rail-count {
+    margin-bottom: 10px;
+  }
+
+  /* The caption, above the animation. It tells the story, so it is the loudest
+     text in it. Every step's caption sits in the same cell, so the tallest
+     sets the height and the animation below never moves; only the current one
+     shows, fading in. */
+  .caption {
+    display: grid;
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+    text-align: center;
+    text-wrap: balance;
+    font-size: clamp(1.25rem, 1rem + 1vw, 1.625rem);
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    color: var(--sl-color-white);
+  }
+  .caption span {
+    grid-area: 1 / 1;
+    visibility: hidden;
+  }
+  .caption span[data-current] {
+    visibility: visible;
+    animation: day-fadein 0.5s ease both;
+  }
+
+  /* Previous, pause or play, and next: line icons under the window's bottom
+     right corner, faint until hovered. */
+  .controls {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    display: flex;
+  }
+  .controls button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--sl-color-gray-4);
+    cursor: pointer;
+  }
+  .controls button:hover {
+    color: var(--sl-color-white);
+  }
+  .controls button:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: -4px;
+  }
+  .day[data-paused] .icon-pause,
+  .day:not([data-paused]) .icon-play {
+    display: none;
+  }
+
+  /* A note pops in, rises and fades. It starts unseen, so a delayed note stays
+     hidden until its turn. */
+  @keyframes day-floatup {
+    from {
+      opacity: 0;
+      transform: translateY(0);
+    }
+    1% {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-28px);
+    }
+  }
+  @keyframes day-blinkpx {
+    0%,
+    100% {
+      opacity: 0.3;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+  @keyframes day-fadein {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes day-blink {
+    0%,
+    49% {
+      opacity: 1;
+    }
+    50%,
+    100% {
+      opacity: 0;
+    }
+  }
+
+  /* Paused: what loops stops where it is, and nothing glides. Fades still run,
+     so what was fading in when the animation stopped finishes appearing. */
+  .day[data-paused] :global(.wm i),
+  .day[data-paused] .cursor,
+  .day[data-paused] .desk-quiet,
+  .day[data-paused] .chime {
+    animation-play-state: paused;
+  }
+  .day[data-paused] :global(*) {
+    transition: none !important;
+  }
+
+  /* Reduced motion: nothing ripples, blinks, floats, walks or fades. */
+  @media (prefers-reduced-motion: reduce) {
+    .day :global(*) {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+</style>

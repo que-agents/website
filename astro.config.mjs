@@ -12,6 +12,8 @@ export default defineConfig({
       description:
         'que is a macOS app for running Claude Code sessions in git worktrees that also puts a boundary around them.',
       favicon: '/favicon.svg',
+      logo: { light: './src/assets/que-mark-light.svg', dark: './src/assets/que-mark-dark.svg' },
+      components: { Search: './src/components/Search.astro' },
       social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/que-agents/que' }],
       editLink: { baseUrl: 'https://github.com/que-agents/website/edit/main/' },
       customCss: ['./src/styles/theme.css'],
