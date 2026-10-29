@@ -6,7 +6,8 @@ import {
   TICKS_PER_STEP,
   dayState,
   settledTick,
-  stepOf
+  stepOf,
+  stepTick
 } from '../src/lib/day'
 
 const texts = (tick: number) => dayState(tick).terminal.lines.map((line) => line.text)
@@ -53,6 +54,11 @@ describe('the steps', () => {
     expect(dayState(settledTick(3)).flags.permission).toBe(true)
     expect(dayState(settledTick(4)).flags).toMatchObject({ board: true, night: true, dim: true })
     expect(dayState(settledTick(5)).flags.unlocked).toBe(true)
+  })
+
+  it('are jumped to at their start while playing, and at their settled frame while paused', () => {
+    expect(STEPS.map((_, step) => stepTick(step, false))).toEqual([0, 20, 40, 60, 80, 100])
+    expect(STEPS.map((_, step) => stepTick(step, true))).toEqual([19, 32, 59, 71, 99, 113])
   })
 })
 

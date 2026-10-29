@@ -13,7 +13,7 @@ export interface Step {
   caption: string
   /** What the app shows, in one sentence, for the screen-reader list. */
   shows: string
-  /** The tick within the step that stands for the whole step when motion is reduced. */
+  /** The tick within the step that stands for the whole step while the clock is stopped. */
   settle: number
 }
 
@@ -69,9 +69,18 @@ export function stepOf(tick: number): number {
   return Math.floor(wrap(tick) / TICKS_PER_STEP)
 }
 
-/** The tick that shows a step when motion is reduced: a settled frame, not its first. */
+/** The tick that shows a step while the clock is stopped: a settled frame, not its first. */
 export function settledTick(step: number): number {
   return step * TICKS_PER_STEP + STEPS[step].settle
+}
+
+/**
+ * Where a timeline button takes the animation: the step's first tick while it
+ * plays, so the step runs from its start, or the step's settled frame while it
+ * is paused, so the frame that stays up says what the step is about.
+ */
+export function stepTick(step: number, paused: boolean): number {
+  return paused ? settledTick(step) : step * TICKS_PER_STEP
 }
 
 // The pixel people: one character per 5 px block, drawn with box-shadow.
