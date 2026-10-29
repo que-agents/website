@@ -1,6 +1,7 @@
 ---
-// The home page's "a day with que": a pixel scene beside que's window, a
-// caption and a timeline. src/lib/day.ts decides what every tick shows; the
+// The home page's "a day with que": a caption above a pixel scene beside que's
+// window, and buttons to pause it and step through it. src/lib/day.ts decides
+// what every tick shows; the
 // script below only writes that into this markup, which is rendered at tick 0
 // so the page shows a whole frame before the script runs.
 //
@@ -51,6 +52,16 @@ const ICONS = {
       ))
     }
   </ol>
+
+  <p class="caption" aria-hidden="true" data-pagefind-ignore>
+    {
+      STEPS.map((step, i) => (
+        <span data-caption data-current={presence(i === initial.step)}>
+          {step.caption}
+        </span>
+      ))
+    }
+  </p>
 
   <div class="stage" aria-hidden="true" data-pagefind-ignore>
     <div class="panels">
@@ -116,6 +127,7 @@ const ICONS = {
               </div>
             </div>
             <div class="px chime" style="left: 160px; bottom: 182px">♪</div>
+            <div class="px chime chime-late" style="left: 178px; bottom: 194px">♪</div>
             <div class="px dim" style="inset: 0"></div>
           </div>
           <div class="home">
@@ -262,10 +274,18 @@ const ICONS = {
                   </svg>
                 </div>
                 <div class="foot-unlocked">
-                  <span class="foot-word">Unlocked</span>
-                  <span class="countdown" data-text="countdown">{texts.countdown}</span>
-                  <span class="spacer"></span>
-                  <span class="pick">lock now</span>
+                  <svg
+                    class="icon unlock-icon"
+                    width="12"
+                    height="12"
+                    viewBox="0 0 16 16"
+                    stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <rect x="3" y="7.25" width="10" height="6.5" rx="1"></rect>
+                    <path d="M5.25 7.25V5a2.75 2.75 0 0 1 5.4-.75"></path>
+                  </svg>
+                  <span><span data-text="countdown">{texts.countdown}</span> left</span>
+                  <span class="lock-now">lock now</span>
                 </div>
                 <div class="foot-icons">
                   <svg class="icon report-icon" width="13" height="13" viewBox="0 0 16 16">
@@ -387,17 +407,19 @@ const ICONS = {
     </div>
   </div>
 
-  <p class="caption" aria-hidden="true" data-text="caption" data-pagefind-ignore>
-    {texts.caption}
-  </p>
 
-  <div class="timeline" data-pagefind-ignore>
-    <button
-      type="button"
-      class="play"
-      data-play
-      aria-label="Pause the animation"
-    >
+  <div class="controls">
+    <button type="button" data-prev aria-label="Previous step">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path
+          d="M10 3.5 5.5 8l4.5 4.5"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"></path>
+      </svg>
+    </button>
+    <button type="button" data-play aria-label="Pause the animation">
       <svg class="icon-pause" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
         <path d="M5.5 3.5v9M10.5 3.5v9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
         ></path>
@@ -407,24 +429,22 @@ const ICONS = {
         ></path>
       </svg>
     </button>
-    {
-      STEPS.map((step, i) => (
-        <button
-          type="button"
-          class="seg"
-          data-step={i}
-          aria-label={`Jump to ${step.time}`}
-          aria-current={i === initial.step ? 'step' : undefined}
-        >
-          {step.time.split(' ')[0]}{' '}<span class="ampm">{step.time.split(' ')[1]}</span>
-        </button>
-      ))
-    }
+    <button type="button" data-next aria-label="Next step">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path
+          d="M6 3.5 10.5 8 6 12.5"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"></path>
+      </svg>
+    </button>
   </div>
+  <p class="sr-only" role="status" data-announce></p>
 </section>
 
 <script>
-  import { LOOP_TICKS, SPRITES, TICK_MS, dayState, stepOf, stepTick } from '../lib/day'
+  import { LOOP_TICKS, SPRITES, STEPS, TICK_MS, dayState, stepOf, stepTick } from '../lib/day'
   import type { DayState, TermLine } from '../lib/day'
 
   for (const root of document.querySelectorAll<HTMLElement>('[data-day]')) {
@@ -463,7 +483,7 @@ const ICONS = {
         ]
       })
     )
-    const buttons = [...root.querySelectorAll<HTMLButtonElement>('button[data-step]')]
+    const captions = [...root.querySelectorAll<HTMLElement>('[data-caption]')]
     let drawnLines = ''
 
     // What each element was last given, so a tick touches the page only where
@@ -517,7 +537,7 @@ const ICONS = {
       for (const [name, on] of Object.entries(s.flags)) {
         setAttr(root, `data-${name}`, presence(on))
       }
-      buttons.forEach((button, i) => setAttr(button, 'aria-current', i === s.step ? 'step' : null))
+      captions.forEach((caption, i) => setAttr(caption, 'data-current', presence(i === s.step)))
       for (const [name, value] of Object.entries(s.texts)) {
         const el = texts.get(name)
         if (el) {
@@ -554,8 +574,8 @@ const ICONS = {
     }
 
     // The clock runs while the animation plays, is on screen and its tab is
-    // showing. Paused, it stays on its frame and the timeline jumps to each
-    // step's settled frame. With reduced motion it starts paused.
+    // showing. Paused, it stays on its frame. With reduced motion it starts
+    // paused, on the first step's settled frame.
     const play = find(root, 'button[data-play]')
     const reduced = matchMedia('(prefers-reduced-motion: reduce)')
     let paused = reduced.matches
@@ -591,8 +611,18 @@ const ICONS = {
       sync()
     }
 
-    buttons.forEach((button, i) => button.addEventListener('click', () => jump(i)))
+    // Stepping by hand says where it landed, for screen readers; the clock's own
+    // steps stay quiet.
+    const announce = find(root, '[data-announce]')
+    const stepBy = (by: number) => {
+      const to = (stepOf(tick) + by + STEPS.length) % STEPS.length
+      jump(to)
+      announce.textContent = `${STEPS[to].time}. ${STEPS[to].caption}`
+    }
+
     play.addEventListener('click', () => setPaused(!paused))
+    find(root, 'button[data-prev]').addEventListener('click', () => stepBy(-1))
+    find(root, 'button[data-next]').addEventListener('click', () => stepBy(1))
     reduced.addEventListener('change', () => {
       setPaused(reduced.matches)
       if (paused) {
@@ -625,7 +655,8 @@ const ICONS = {
 
 <style>
   .day {
-    /* que's dark tokens, fixed on purpose (the animation stays dark in both site themes), not the site theme's variables. */
+    /* que's dark tokens, fixed on purpose (the animation stays dark in both site themes), not the site theme's variables.
+       The caption and the pause button sit on the page, so they take the site's. */
     --bg: #181818;
     --bg-side: #111111;
     --bg-active: #2c2c2c;
@@ -650,29 +681,20 @@ const ICONS = {
     --mono: var(--__sl-font-mono);
 
     position: relative;
-    margin-top: 1.5rem;
+    margin-top: 3rem;
     display: flex;
     flex-direction: column;
     gap: 20px;
-    padding: 48px 16px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    background: var(--bg);
+    padding-bottom: 46px;
     color: var(--fg);
     font-family: var(--__sl-font);
     font-size: 15px;
     line-height: 1.6;
   }
-  @media (max-width: 40rem) {
-    .day {
-      padding: 32px 12px;
-    }
-  }
 
-  /* The home page gives the animation its natural width: 1110px and the frame. */
+  /* The home page gives the animation its natural width. */
   :global(.sl-container:has([data-day])) {
-    max-width: calc(1110px + 2 * 16px + 2px);
+    max-width: 1110px;
   }
 
   /* What is on and off: dayState()'s flags, as data attributes on .day. */
@@ -714,9 +736,17 @@ const ICONS = {
     justify-content: center;
     gap: calc(20 * var(--unit));
   }
+  /* A slot clips its panel, which overflows it until the script has scaled it,
+     so the page never scrolls sideways. The window's shadow is the slot's, so
+     nothing clips it. */
   .slot {
     position: relative;
     flex: none;
+    overflow: hidden;
+  }
+  .slot-app {
+    border-radius: calc(10px * var(--scale, 1));
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
   }
   .slot-scene {
     width: calc(440 * var(--unit));
@@ -762,14 +792,49 @@ const ICONS = {
   .px {
     position: absolute;
   }
+  /* The office by day: dusty blue walls, a wood floor, a pale sky. At six it
+     fades to the night's greys. */
+  .wall {
+    background: #4d5b6b;
+  }
+  .floor {
+    background: #5a4a3c;
+  }
+  .skirting {
+    background: #6b5a48;
+  }
   .sky {
     box-sizing: border-box;
-    border: 5px solid #3a3a3a;
-    background: #62686f;
-    transition: background 1.5s ease;
+    border: 5px solid #3c4757;
+    background: #9fbfd6;
+  }
+  .mullion {
+    background: #3c4757;
+  }
+  .wall,
+  .floor,
+  .skirting,
+  .sky,
+  .mullion {
+    transition:
+      background 1.5s ease,
+      border-color 1.5s ease;
+  }
+  .day[data-night] .wall {
+    background: #232323;
+  }
+  .day[data-night] .floor {
+    background: #1a1a1a;
+  }
+  .day[data-night] .skirting {
+    background: #2c2c2c;
   }
   .day[data-night] .sky {
+    border-color: #3a3a3a;
     background: #0e1013;
+  }
+  .day[data-night] .mullion {
+    background: #3a3a3a;
   }
   .home-window {
     box-sizing: border-box;
@@ -812,6 +877,12 @@ const ICONS = {
     color: var(--good);
     animation: day-floatup 1.4s ease-out both;
   }
+  /* A second, smaller note, a beat after the first. */
+  .chime-late {
+    font-size: 16px;
+    animation-name: day-floatup-late;
+    animation-duration: 1.75s;
+  }
   .dim {
     background: #000000;
     opacity: 0;
@@ -837,7 +908,6 @@ const ICONS = {
   .app {
     width: 650px;
     background: var(--bg-side);
-    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
     font-size: 12px;
   }
   .lights {
@@ -897,8 +967,7 @@ const ICONS = {
   .word,
   .dash,
   .unlock,
-  .tag,
-  .countdown {
+  .tag {
     font-family: var(--mono);
     font-size: 11px;
   }
@@ -1078,6 +1147,23 @@ const ICONS = {
   .foot-quiet {
     position: relative;
   }
+  /* Unlocked, as que draws it: an open padlock and the time left in the accent,
+     lock now faint at the right end, all in the mono. */
+  .foot-unlocked {
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent);
+  }
+  .unlock-icon {
+    flex: none;
+    stroke: currentColor;
+  }
+  .lock-now {
+    margin-left: auto;
+    color: var(--fg-faint);
+  }
   .foot-word {
     color: var(--fg-secondary);
     font-size: 12.5px;
@@ -1102,9 +1188,6 @@ const ICONS = {
     position: absolute;
     left: 82px;
     top: 8px;
-  }
-  .countdown {
-    color: var(--accent);
   }
   .foot-icons {
     display: flex;
@@ -1339,82 +1422,82 @@ const ICONS = {
     margin-bottom: 10px;
   }
 
-  /* The caption and the timeline. */
+  /* The caption, above the animation. It tells the story, so it is the loudest
+     text in the frame. Every step's caption sits in the same cell, so the tallest
+     sets the height and the animation below never moves; only the current one
+     shows, fading in. */
   .caption {
-    margin: 0;
-    min-height: 24px;
-    text-align: center;
-    font-size: 15px;
-    color: var(--fg-secondary);
-  }
-  .timeline {
     display: grid;
-    grid-template-columns: 40px repeat(6, minmax(0, 1fr));
-    gap: 8px;
     width: 100%;
-    max-width: calc(40px + 8px + 760px);
+    max-width: 760px;
     margin: 0 auto;
+    text-align: center;
+    text-wrap: balance;
+    font-size: clamp(1.25rem, 1rem + 1vw, 1.625rem);
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    color: var(--sl-color-white);
   }
-  /* Pause and play: a line icon in line with the labels (the same box as a step's
-     button, centred the same way), faint until hovered. */
-  .play {
+  .caption span {
+    grid-area: 1 / 1;
+    visibility: hidden;
+  }
+  .caption span[data-current] {
+    visibility: visible;
+    animation: day-fadein 0.5s ease both;
+  }
+
+  /* Previous, pause or play, and next: line icons under the window's bottom
+     right corner, faint until hovered. */
+  .controls {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    display: flex;
+  }
+  .controls button {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 44px;
-    padding: 8px 0 0;
+    width: 44px;
+    height: 44px;
+    padding: 0;
     border: 0;
-    border-top: 2px solid transparent;
     background: none;
-    color: var(--fg-faint);
+    color: var(--sl-color-gray-4);
     cursor: pointer;
   }
-  .play:hover {
-    color: var(--fg);
+  .controls button:hover {
+    color: var(--sl-color-white);
   }
-  .play:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
+  .controls button:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: -4px;
   }
   .day[data-paused] .icon-pause,
   .day:not([data-paused]) .icon-play {
     display: none;
   }
-  .seg {
-    min-height: 44px;
-    padding: 8px 0 0;
-    border: 0;
-    border-top: 2px solid var(--border-strong);
-    background: none;
-    text-align: left;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--fg-muted);
-    cursor: pointer;
-  }
-  .seg {
-    white-space: nowrap;
-  }
-  /* Too narrow for "10:14 PM" on one line: every step puts AM or PM under its time. */
-  @media (max-width: 32rem) {
-    .ampm {
-      display: block;
-    }
-  }
-  .seg:hover,
-  .seg[aria-current] {
-    color: var(--fg);
-  }
-  .seg[aria-current] {
-    border-top-color: var(--accent);
-  }
-  .seg:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
 
   @keyframes day-floatup {
     from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-28px);
+    }
+  }
+  /* The same, after a fifth of its time unseen. */
+  @keyframes day-floatup-late {
+    0%,
+    19% {
+      opacity: 0;
+      transform: translateY(0);
+    }
+    20% {
       opacity: 1;
       transform: translateY(0);
     }
@@ -1452,7 +1535,7 @@ const ICONS = {
   }
 
   /* Paused: what loops stops where it is, and nothing glides. Fades still run,
-     so a step jumped to while paused appears instead of staying at its first frame. */
+     so what was fading in when the animation stopped finishes appearing. */
   .day[data-paused] :global(.wm i),
   .day[data-paused] .cursor,
   .day[data-paused] .desk-quiet,

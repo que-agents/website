@@ -258,12 +258,6 @@ describe('the terminal', () => {
 })
 
 describe('the scene', () => {
-  it('captions each step', () => {
-    expect(STEPS.map((_, step) => dayState(step * TICKS_PER_STEP).texts.caption)).toEqual(
-      STEPS.map((step) => step.caption)
-    )
-  })
-
   it('is the office until 10:14 PM, then home', () => {
     expect(ticks.filter((t) => dayState(t).flags.home)).toEqual(
       Array.from({ length: 20 }, (_, i) => 100 + i)
@@ -271,10 +265,10 @@ describe('the scene', () => {
   })
 
   it('walks the person over for the meeting, back to the desk, and out at six', () => {
-    expect(dayState(43).person).toMatchObject({ left: 180, pose: 'reach', walkSeconds: 1.5 })
-    expect(dayState(44).person).toMatchObject({ left: 245, facing: 'right', walkSeconds: 1.5 })
+    expect(dayState(43).person).toMatchObject({ left: 180, pose: 'reach', walkSeconds: 1.8 })
+    expect(dayState(44).person).toMatchObject({ left: 245, facing: 'right', walkSeconds: 1.8 })
     expect(dayState(60).person).toMatchObject({ left: 180, facing: 'left' })
-    expect(dayState(84).person).toMatchObject({ left: 470, walkSeconds: 2.5 })
+    expect(dayState(84).person).toMatchObject({ left: 470, walkSeconds: 3 })
     expect(dayState(100).person).toEqual({
       left: 132,
       bottom: 80,

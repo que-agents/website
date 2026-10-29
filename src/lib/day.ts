@@ -1,13 +1,13 @@
 // The home page's "day with que" animation as a pure function of the clock.
-// The clock ticks every 250 ms; the day is six steps of 20 ticks (five seconds
+// The clock ticks every 300 ms; the day is six steps of 20 ticks (six seconds
 // each) and starts over after 120. dayState(t) says everything the pixel scene
 // and the app window show at tick t; DayAnimation.astro only puts it on the page.
 
-export const TICK_MS = 250
+export const TICK_MS = 300
 export const TICKS_PER_STEP = 20
 
 export interface Step {
-  /** The timeline's label. */
+  /** The time of day, for the screen-reader list. */
   time: string
   /** The line under the animation. */
   caption: string
@@ -20,42 +20,42 @@ export interface Step {
 export const STEPS: readonly Step[] = [
   {
     time: '8 AM',
-    caption: 'The morning report: what the night did.',
+    caption: 'Coffee first. Two pull requests opened overnight.',
     shows:
       'The report view sums up the night: five sessions, two pull requests, one session waiting for you and one unlock.',
     settle: 19
   },
   {
     time: '9:30 AM',
-    caption: 'One worktree per task. A chime when one finishes.',
+    caption: "Each task gets a worktree, and a chime when it's done.",
     shows:
       'A Claude Code session reads, edits and tests the uploader in its own worktree while the others work, and a chime sounds as the cache session finishes.',
     settle: 12
   },
   {
     time: '11 AM',
-    caption: 'A meeting: quiet for an hour.',
+    caption: 'In a meeting? Go quiet for an hour.',
     shows:
       'One click on Quiet 1h swaps the window for the quiet board, a dim row per session saying working, waiting or idle, until 12:00.',
     settle: 19
   },
   {
     time: '12 PM',
-    caption: 'Quiet ends. The question waited for you.',
+    caption: 'Back at your desk, the question waited for you.',
     shows:
       'The terminals come back, and the billing session is still asking for permission to run npm run migrate.',
     settle: 11
   },
   {
     time: '6 PM',
-    caption: 'Quiet hours. The sessions keep running.',
+    caption: 'End of the day. You leave, but the sessions keep running.',
     shows:
       'Quiet hours start: the quiet board stays up until 08:00 while three sessions keep working.',
     settle: 19
   },
   {
     time: '10:14 PM',
-    caption: 'Need a look? Unlock, timed and logged.',
+    caption: 'Need to check in? Unlock for a quick, timed look.',
     shows:
       'From home, a 20-minute unlock shows the terminals again; asked whether the checks on #88 passed, Claude Code looks and says all three pass, then the quiet board comes back.',
     settle: 13
@@ -75,9 +75,9 @@ export function settledTick(step: number): number {
 }
 
 /**
- * Where a timeline button takes the animation: the step's first tick while it
- * plays, so the step runs from its start, or the step's settled frame while it
- * is paused, so the frame that stays up says what the step is about.
+ * Where the animation lands on a step: the step's first tick while it plays, so
+ * the step runs from its start, or the step's settled frame while it is paused,
+ * so the frame that stays up says what the step is about.
  */
 export function stepTick(step: number, paused: boolean): number {
   return paused ? settledTick(step) : step * TICKS_PER_STEP
@@ -147,14 +147,18 @@ export interface Px {
   cls?: string
 }
 
-/** Behind the person at the office: wall, floor, window, plant, chair, side table. */
+/**
+ * Behind the person at the office: wall, floor, window, plant, chair, side table.
+ * The room's own colours (wall, floor, skirting, the window) are in the CSS, by
+ * day and by night.
+ */
 export const OFFICE_BACK: readonly Px[] = [
-  { x: 0, y: 0, w: '100%', h: '100%', bg: '#232323' },
-  { x: 0, y: 0, w: '100%', h: 75, bg: '#1a1a1a' },
-  { x: 0, y: 70, w: '100%', h: 5, bg: '#2c2c2c' },
+  { x: 0, y: 0, w: '100%', h: '100%', cls: 'wall' },
+  { x: 0, y: 0, w: '100%', h: 75, cls: 'floor' },
+  { x: 0, y: 70, w: '100%', h: 5, cls: 'skirting' },
   { x: 245, y: 215, w: 120, h: 110, cls: 'sky' },
-  { x: 302, y: 215, w: 5, h: 110, bg: '#3a3a3a' },
-  { x: 245, y: 267, w: 120, h: 5, bg: '#3a3a3a' },
+  { x: 302, y: 215, w: 5, h: 110, cls: 'mullion' },
+  { x: 245, y: 267, w: 120, h: 5, cls: 'mullion' },
   { x: 335, y: 290, w: 15, h: 15, bg: '#e6e2cf', cls: 'stars' },
   { x: 262, y: 300, w: 3, h: 3, bg: '#9b9b9b', cls: 'stars' },
   { x: 322, y: 240, w: 3, h: 3, bg: '#9b9b9b', cls: 'stars' },
@@ -177,25 +181,40 @@ export const OFFICE_FRONT: readonly Px[] = [
   { x: 200, y: 75, w: 8, h: 28, bg: '#4a3d31' },
   { x: 120, y: 111, w: 10, h: 9, bg: '#303030' },
   { x: 80, y: 120, w: 90, h: 56, bg: '#303030' },
-  { x: 58, y: 111, w: 10, h: 11, bg: '#d8d8d8', cls: 'mug' },
-  { x: 68, y: 114, w: 4, h: 5, bg: '#b0b0b0', cls: 'mug' }
+  { x: 166, y: 111, w: 10, h: 11, bg: '#d8d8d8', cls: 'mug' },
+  { x: 176, y: 114, w: 4, h: 5, bg: '#b0b0b0', cls: 'mug' }
 ]
 
-/** Behind the person at home: wall, floor, the night window, the lamp, the sofa. */
+/** Behind the person at home: wall, floor, the night window, the lamp, the couch. */
 export const HOME_BACK: readonly Px[] = [
   { x: 0, y: 0, w: '100%', h: '100%', bg: '#211f1e' },
   { x: 0, y: 0, w: '100%', h: 75, bg: '#191817' },
   { x: 0, y: 70, w: '100%', h: 5, bg: '#2a2826' },
   { x: 300, y: 210, w: 120, h: 100, bg: '#0e1013', cls: 'home-window' },
+  { x: 357, y: 210, w: 5, h: 100, bg: '#3a3836' },
+  { x: 300, y: 257, w: 120, h: 5, bg: '#3a3836' },
   { x: 390, y: 270, w: 15, h: 15, bg: '#e6e2cf' },
   { x: 320, y: 285, w: 3, h: 3, bg: '#9b9b9b' },
   { x: 350, y: 235, w: 3, h: 3, bg: '#9b9b9b' },
   { x: 214, y: 110, w: 110, h: 110, cls: 'lamp-glow' },
   { x: 267, y: 75, w: 4, h: 118, bg: '#3a3836' },
   { x: 253, y: 190, w: 32, h: 18, bg: '#cdb98f' },
-  { x: 30, y: 75, w: 220, h: 22, bg: '#4a4038' },
-  { x: 210, y: 75, w: 34, h: 75, bg: '#564a40' },
-  { x: 25, y: 75, w: 22, h: 42, bg: '#564a40' }
+  // The couch, from the front: its feet, the back and its cushions, the seat
+  // and its cushions, and an arm at each end.
+  { x: 33, y: 75, w: 6, h: 4, bg: '#2c2622' },
+  { x: 233, y: 75, w: 6, h: 4, bg: '#2c2622' },
+  { x: 47, y: 97, w: 180, h: 40, bg: '#43392f' },
+  { x: 47, y: 133, w: 180, h: 4, bg: '#4c4137' },
+  { x: 106, y: 97, w: 2, h: 36, bg: '#382f28' },
+  { x: 166, y: 97, w: 2, h: 36, bg: '#382f28' },
+  { x: 28, y: 79, w: 216, h: 18, bg: '#4a4038' },
+  { x: 47, y: 93, w: 180, h: 4, bg: '#56493f' },
+  { x: 106, y: 79, w: 2, h: 18, bg: '#3d342e' },
+  { x: 166, y: 79, w: 2, h: 18, bg: '#3d342e' },
+  { x: 25, y: 79, w: 22, h: 40, bg: '#564a40' },
+  { x: 225, y: 79, w: 22, h: 40, bg: '#564a40' },
+  { x: 25, y: 115, w: 22, h: 4, bg: '#62554a' },
+  { x: 225, y: 115, w: 22, h: 4, bg: '#62554a' }
 ]
 
 /** In front of the person at home: the laptop on their lap. */
@@ -383,8 +402,6 @@ export interface Flags {
 
 /** Every text that changes, by the name of the element that shows it (its data-text). */
 export interface Texts {
-  /** The line under the animation. */
-  caption: string
   boardLabel: string
   boardNow: string
   boardUntil: string
@@ -495,11 +512,13 @@ export function dayState(tick: number): DayState {
   let facing: 'left' | 'right' = 'left'
   let pose: Pose = 'sit'
   let walkSeconds = 0
+  // A walk takes as long as the legs move: so many ticks of the walking pose.
+  const walk = (ticks: number) => (ticks * TICK_MS) / 1000
   if (step === 1) {
     pose = odd ? 'reach' : 'sit'
   }
   if (step === 2) {
-    walkSeconds = 1.5
+    walkSeconds = walk(6)
     if (k < 4) {
       pose = 'reach'
     } else {
@@ -509,7 +528,7 @@ export function dayState(tick: number): DayState {
     }
   }
   if (step === 3) {
-    walkSeconds = 1.5
+    walkSeconds = walk(6)
     if (k < 6) {
       pose = odd ? 'walk' : 'stand'
     } else {
@@ -517,7 +536,7 @@ export function dayState(tick: number): DayState {
     }
   }
   if (step === 4) {
-    walkSeconds = 2.5
+    walkSeconds = walk(10)
     if (k >= 4) {
       left = 470
       facing = 'right'
@@ -629,7 +648,6 @@ export function dayState(tick: number): DayState {
     sessions,
     lines,
     texts: {
-      caption: STEPS[step].caption,
       boardLabel: shown.label,
       boardNow: shown.now(k - shown.from),
       boardUntil: shown.until,
