@@ -14,6 +14,8 @@ export default defineConfig({
       favicon: '/favicon.svg',
       social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/que-agents/que' }],
       editLink: { baseUrl: 'https://github.com/que-agents/website/edit/main/' },
+      customCss: ['./src/styles/theme.css'],
+      expressiveCode: { styleOverrides: { borderRadius: '4px' } },
       sidebar: [
         {
           label: 'Reference',
