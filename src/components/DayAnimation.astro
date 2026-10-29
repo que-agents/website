@@ -416,8 +416,7 @@ const ICONS = {
           aria-label={`Jump to ${step.time}`}
           aria-current={i === initial.step ? 'step' : undefined}
         >
-          {step.time.split(' ')[0]}
-          <span class="ampm">{step.time.split(' ')[1]}</span>
+          {step.time.split(' ')[0]}{' '}<span class="ampm">{step.time.split(' ')[1]}</span>
         </button>
       ))
     }
