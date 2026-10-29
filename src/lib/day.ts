@@ -69,18 +69,13 @@ export function stepOf(tick: number): number {
   return Math.floor(wrap(tick) / TICKS_PER_STEP)
 }
 
-/** The tick that shows a step while the clock is stopped: a settled frame, not its first. */
-export function settledTick(step: number): number {
-  return step * TICKS_PER_STEP + STEPS[step].settle
-}
-
 /**
  * Where the animation lands on a step: the step's first tick while it plays, so
  * the step runs from its start, or the step's settled frame while it is paused,
  * so the frame that stays up says what the step is about.
  */
 export function stepTick(step: number, paused: boolean): number {
-  return paused ? settledTick(step) : step * TICKS_PER_STEP
+  return step * TICKS_PER_STEP + (paused ? STEPS[step].settle : 0)
 }
 
 // The pixel people: one character per 5 px block, drawn with box-shadow.
@@ -201,20 +196,17 @@ export const HOME_BACK: readonly Px[] = [
   { x: 253, y: 190, w: 32, h: 18, bg: '#cdb98f' },
   // The couch, from the front: its feet, the back and its cushions, the seat
   // and its cushions, and an arm at each end.
-  { x: 33, y: 75, w: 6, h: 4, bg: '#2c2622' },
-  { x: 233, y: 75, w: 6, h: 4, bg: '#2c2622' },
+  ...[33, 233].map((x) => ({ x, y: 75, w: 6, h: 4, bg: '#2c2622' })),
   { x: 47, y: 97, w: 180, h: 40, bg: '#43392f' },
   { x: 47, y: 133, w: 180, h: 4, bg: '#4c4137' },
-  { x: 106, y: 97, w: 2, h: 36, bg: '#382f28' },
-  { x: 166, y: 97, w: 2, h: 36, bg: '#382f28' },
+  ...[106, 166].map((x) => ({ x, y: 97, w: 2, h: 36, bg: '#382f28' })),
   { x: 28, y: 79, w: 216, h: 18, bg: '#4a4038' },
   { x: 47, y: 93, w: 180, h: 4, bg: '#56493f' },
-  { x: 106, y: 79, w: 2, h: 18, bg: '#3d342e' },
-  { x: 166, y: 79, w: 2, h: 18, bg: '#3d342e' },
-  { x: 25, y: 79, w: 22, h: 40, bg: '#564a40' },
-  { x: 225, y: 79, w: 22, h: 40, bg: '#564a40' },
-  { x: 25, y: 115, w: 22, h: 4, bg: '#62554a' },
-  { x: 225, y: 115, w: 22, h: 4, bg: '#62554a' }
+  ...[106, 166].map((x) => ({ x, y: 79, w: 2, h: 18, bg: '#3d342e' })),
+  ...[25, 225].flatMap((x) => [
+    { x, y: 79, w: 22, h: 40, bg: '#564a40' },
+    { x, y: 115, w: 22, h: 4, bg: '#62554a' }
+  ])
 ]
 
 /** In front of the person at home: the laptop on their lap. */

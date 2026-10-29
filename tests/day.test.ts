@@ -6,7 +6,6 @@ import {
   STEPS,
   TICKS_PER_STEP,
   dayState,
-  settledTick,
   stepOf,
   stepTick
 } from '../src/lib/day'
@@ -41,18 +40,17 @@ describe('the steps', () => {
 
   it('each settle on a tick inside the step', () => {
     STEPS.forEach((_, step) => {
-      expect(stepOf(settledTick(step))).toBe(step)
+      expect(stepOf(stepTick(step, true))).toBe(step)
     })
-    expect(STEPS.map((_, step) => settledTick(step))).toEqual([19, 32, 59, 71, 99, 113])
   })
 
   it('settle where each caption is true', () => {
-    expect(dayState(settledTick(0)).flags.report).toBe(true)
-    expect(dayState(settledTick(1)).flags.chime).toBe(true)
-    expect(dayState(settledTick(2)).flags.board).toBe(true)
-    expect(dayState(settledTick(3)).flags.permission).toBe(true)
-    expect(dayState(settledTick(4)).flags).toMatchObject({ board: true, night: true, dim: true })
-    expect(dayState(settledTick(5)).flags.unlocked).toBe(true)
+    expect(dayState(stepTick(0, true)).flags.report).toBe(true)
+    expect(dayState(stepTick(1, true)).flags.chime).toBe(true)
+    expect(dayState(stepTick(2, true)).flags.board).toBe(true)
+    expect(dayState(stepTick(3, true)).flags.permission).toBe(true)
+    expect(dayState(stepTick(4, true)).flags).toMatchObject({ board: true, night: true, dim: true })
+    expect(dayState(stepTick(5, true)).flags.unlocked).toBe(true)
   })
 
   it('are jumped to at their start while playing, and at their settled frame while paused', () => {

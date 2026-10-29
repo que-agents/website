@@ -1,9 +1,9 @@
 ---
 // The home page's "a day with que": a caption above a pixel scene beside que's
 // window, and buttons to pause it and step through it. src/lib/day.ts decides
-// what every tick shows; the
-// script below only writes that into this markup, which is rendered at tick 0
-// so the page shows a whole frame before the script runs.
+// what every tick shows; the script below only writes that into this markup,
+// which is rendered at tick 0 so the page shows a whole frame before the script
+// runs.
 //
 // The scene and the window are drawn at their natural size, 440 × 460 and
 // 650 × 460, and scaled down as a whole when there is less room (see .stage).
@@ -794,22 +794,36 @@ const ICONS = {
   }
   /* The office by day: dusty blue walls, a wood floor, a pale sky. At six it
      fades to the night's greys. */
+  .office {
+    --wall: #4d5b6b;
+    --floor: #5a4a3c;
+    --skirting: #6b5a48;
+    --sky: #9fbfd6;
+    --frame: #3c4757;
+  }
+  .day[data-night] .office {
+    --wall: #232323;
+    --floor: #1a1a1a;
+    --skirting: var(--bg-active);
+    --sky: #0e1013;
+    --frame: #3a3a3a;
+  }
   .wall {
-    background: #4d5b6b;
+    background: var(--wall);
   }
   .floor {
-    background: #5a4a3c;
+    background: var(--floor);
   }
   .skirting {
-    background: #6b5a48;
+    background: var(--skirting);
   }
   .sky {
     box-sizing: border-box;
-    border: 5px solid #3c4757;
-    background: #9fbfd6;
+    border: 5px solid var(--frame);
+    background: var(--sky);
   }
   .mullion {
-    background: #3c4757;
+    background: var(--frame);
   }
   .wall,
   .floor,
@@ -819,22 +833,6 @@ const ICONS = {
     transition:
       background 1.5s ease,
       border-color 1.5s ease;
-  }
-  .day[data-night] .wall {
-    background: #232323;
-  }
-  .day[data-night] .floor {
-    background: #1a1a1a;
-  }
-  .day[data-night] .skirting {
-    background: #2c2c2c;
-  }
-  .day[data-night] .sky {
-    border-color: #3a3a3a;
-    background: #0e1013;
-  }
-  .day[data-night] .mullion {
-    background: #3a3a3a;
   }
   .home-window {
     box-sizing: border-box;
@@ -880,8 +878,7 @@ const ICONS = {
   /* A second, smaller note, a beat after the first. */
   .chime-late {
     font-size: 16px;
-    animation-name: day-floatup-late;
-    animation-duration: 1.75s;
+    animation-delay: 0.35s;
   }
   .dim {
     background: #000000;
@@ -1423,7 +1420,7 @@ const ICONS = {
   }
 
   /* The caption, above the animation. It tells the story, so it is the loudest
-     text in the frame. Every step's caption sits in the same cell, so the tallest
+     text in it. Every step's caption sits in the same cell, so the tallest
      sets the height and the animation below never moves; only the current one
      shows, fading in. */
   .caption {
@@ -1480,26 +1477,15 @@ const ICONS = {
     display: none;
   }
 
+  /* A note pops in, rises and fades. It starts unseen, so a delayed note stays
+     hidden until its turn. */
   @keyframes day-floatup {
     from {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    to {
-      opacity: 0;
-      transform: translateY(-28px);
-    }
-  }
-  /* The same, after a fifth of its time unseen. */
-  @keyframes day-floatup-late {
-    0%,
-    19% {
       opacity: 0;
       transform: translateY(0);
     }
-    20% {
+    1% {
       opacity: 1;
-      transform: translateY(0);
     }
     to {
       opacity: 0;
