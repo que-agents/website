@@ -41,7 +41,7 @@ export const STEPS: readonly Step[] = [
   },
   {
     time: '12 PM',
-    caption: 'Back at your desk, the question waited for you.',
+    caption: 'Back at your desk, anything that needs you is waiting.',
     shows:
       'The terminals come back, and the billing session is still asking for permission to run npm run migrate.',
     settle: 11
