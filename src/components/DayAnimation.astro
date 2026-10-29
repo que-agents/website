@@ -7,16 +7,38 @@
 // The scene and the window are drawn at their natural size, 440 × 460 and
 // 650 × 460, and scaled down as a whole when there is less room (see .stage).
 // The animation is always dark, in que's palette, whatever the site's theme.
-import { PROJECTS, REPORT_ROWS, SPRITES, STEPS, dayState } from '../lib/day'
+import {
+  HOME_BACK,
+  HOME_FRONT,
+  OFFICE_BACK,
+  OFFICE_FRONT,
+  PROJECTS,
+  REPORT_ROWS,
+  SPRITES,
+  STEPS,
+  dayState,
+  type Px
+} from '../lib/day'
+import WorkingMark from './WorkingMark.astro'
 
 const initial = dayState(0)
+const { person, texts } = initial
 const flags = Object.fromEntries(
   Object.entries(initial.flags)
     .filter(([, on]) => on)
     .map(([name]) => [`data-${name}`, ''])
 )
-const { person, terminal } = initial
 const presence = (on: boolean) => (on ? '' : undefined)
+const length = (size: Px['w']) => (typeof size === 'number' ? `${size}px` : size)
+const place = (px: Px) =>
+  `left: ${px.x}px; bottom: ${px.y}px; width: ${length(px.w)}; height: ${length(px.h)}` +
+  (px.bg ? `; background: ${px.bg}` : '')
+
+// Paths the window's line icons share: the folder, and the tab row's two split buttons.
+const ICONS = {
+  folder: 'M2 4.5h4l1.5 1.5H14v6.5H2z',
+  splits: ['M8 3v10', 'M2 8h12']
+}
 ---
 
 <section class="day not-content" data-day aria-label="A day with que" {...flags}>
@@ -35,129 +57,13 @@ const presence = (on: boolean) => (on ? '' : undefined)
       <div class="slot slot-scene" data-slot>
         <div class="scene">
           <div class="office">
-            <div class="px" style="inset: 0; background: #232323"></div>
-            <div
-              class="px"
-              style="left: 0; right: 0; bottom: 0; height: 70px; background: #1a1a1a; border-top: 5px solid #2c2c2c"
-            >
-            </div>
-            <div
-              class="px sky"
-              style="left: 245px; bottom: 215px; width: 120px; height: 110px; border: 5px solid #3a3a3a"
-            >
-            </div>
-            <div
-              class="px"
-              style="left: 302px; bottom: 215px; width: 5px; height: 110px; background: #3a3a3a"
-            >
-            </div>
-            <div
-              class="px"
-              style="left: 245px; bottom: 267px; width: 120px; height: 5px; background: #3a3a3a"
-            >
-            </div>
-            <div class="stars">
-              <div
-                class="px"
-                style="left: 335px; bottom: 290px; width: 15px; height: 15px; background: #e6e2cf"
-              >
-              </div>
-              <div
-                class="px"
-                style="left: 262px; bottom: 300px; width: 3px; height: 3px; background: #9b9b9b"
-              >
-              </div>
-              <div
-                class="px"
-                style="left: 322px; bottom: 240px; width: 3px; height: 3px; background: #9b9b9b"
-              >
-              </div>
-            </div>
-            <div class="px" style="left: 8px; bottom: 75px; width: 20px; height: 18px; background: #5c4636">
-            </div>
-            <div class="px" style="left: 3px; bottom: 93px; width: 10px; height: 10px; background: #4f7a52">
-            </div>
-            <div class="px" style="left: 13px; bottom: 98px; width: 10px; height: 15px; background: #5d8c60">
-            </div>
-            <div class="px" style="left: 23px; bottom: 93px; width: 10px; height: 10px; background: #4f7a52">
-            </div>
-            <div class="px" style="left: 208px; bottom: 75px; width: 6px; height: 9px; background: #3a3a3a">
-            </div>
-            <div class="px" style="left: 194px; bottom: 79px; width: 40px; height: 6px; background: #444444">
-            </div>
-            <div class="px" style="left: 228px; bottom: 79px; width: 6px; height: 60px; background: #444444">
-            </div>
-            <div
-              class="px"
-              style="left: 300px; bottom: 103px; width: 80px; height: 8px; background: #5b4b3c"
-            >
-            </div>
-            <div
-              class="px"
-              style="left: 306px; bottom: 75px; width: 8px; height: 28px; background: #4a3d31"
-            >
-            </div>
-            <div
-              class="px"
-              style="left: 366px; bottom: 75px; width: 8px; height: 28px; background: #4a3d31"
-            >
-            </div>
+            {OFFICE_BACK.map((px) => <div class:list={['px', px.cls]} style={place(px)} />)}
             <div class="figure colleague" style="left: 385px; bottom: 75px">
               <div class="sprite" style={`box-shadow: ${SPRITES.colleague}`}></div>
             </div>
           </div>
-
           <div class="home">
-            <div class="px" style="inset: 0; background: #211f1e"></div>
-            <div
-              class="px"
-              style="left: 0; right: 0; bottom: 0; height: 70px; background: #191817; border-top: 5px solid #2a2826"
-            >
-            </div>
-            <div
-              class="px home-window"
-              style="left: 300px; bottom: 210px; width: 120px; height: 100px; background: #0e1013; border: 5px solid #3a3836"
-            >
-            </div>
-            <div
-              class="px"
-              style="left: 390px; bottom: 270px; width: 15px; height: 15px; background: #e6e2cf"
-            >
-            </div>
-            <div
-              class="px"
-              style="left: 320px; bottom: 285px; width: 3px; height: 3px; background: #9b9b9b"
-            >
-            </div>
-            <div
-              class="px"
-              style="left: 350px; bottom: 235px; width: 3px; height: 3px; background: #9b9b9b"
-            >
-            </div>
-            <div class="px lamp-glow" style="left: 214px; bottom: 110px; width: 110px; height: 110px">
-            </div>
-            <div
-              class="px"
-              style="left: 267px; bottom: 75px; width: 4px; height: 118px; background: #3a3836"
-            >
-            </div>
-            <div
-              class="px"
-              style="left: 253px; bottom: 190px; width: 32px; height: 18px; background: #cdb98f"
-            >
-            </div>
-            <div
-              class="px"
-              style="left: 30px; bottom: 75px; width: 220px; height: 22px; background: #4a4038"
-            >
-            </div>
-            <div
-              class="px"
-              style="left: 210px; bottom: 75px; width: 34px; height: 75px; background: #564a40"
-            >
-            </div>
-            <div class="px" style="left: 25px; bottom: 75px; width: 22px; height: 42px; background: #564a40">
-            </div>
+            {HOME_BACK.map((px) => <div class:list={['px', px.cls]} style={place(px)} />)}
           </div>
 
           <div
@@ -169,28 +75,7 @@ const presence = (on: boolean) => (on ? '' : undefined)
           </div>
 
           <div class="office">
-            <div
-              class="px"
-              style="left: 40px; bottom: 103px; width: 172px; height: 8px; background: #5b4b3c"
-            >
-            </div>
-            <div class="px" style="left: 44px; bottom: 75px; width: 8px; height: 28px; background: #4a3d31">
-            </div>
-            <div
-              class="px"
-              style="left: 200px; bottom: 75px; width: 8px; height: 28px; background: #4a3d31"
-            >
-            </div>
-            <div
-              class="px"
-              style="left: 120px; bottom: 111px; width: 10px; height: 9px; background: #303030"
-            >
-            </div>
-            <div
-              class="px"
-              style="left: 80px; bottom: 120px; width: 90px; height: 56px; background: #303030"
-            >
-            </div>
+            {OFFICE_FRONT.map((px) => <div class:list={['px', px.cls]} style={place(px)} />)}
             <div class="px desk-screen" style="left: 85px; bottom: 125px; width: 80px; height: 46px">
               <div class="desk-rows">
                 <div class="px" style="left: 0; top: 0; bottom: 0; width: 22px; background: #111111">
@@ -210,23 +95,19 @@ const presence = (on: boolean) => (on ? '' : undefined)
                     </Fragment>
                   ))
                 }
-                <div class="px" style="left: 27px; top: 8px; width: 40px; height: 2px; background: #9b9b9b">
-                </div>
-                <div
-                  class="px"
-                  style="left: 27px; top: 14px; width: 30px; height: 2px; background: #6f6f6f"
-                >
-                </div>
-                <div
-                  class="px"
-                  style="left: 27px; top: 20px; width: 46px; height: 2px; background: #6f6f6f"
-                >
-                </div>
-                <div
-                  class="px"
-                  style="left: 27px; top: 26px; width: 22px; height: 2px; background: #6f6f6f"
-                >
-                </div>
+                {
+                  [
+                    [8, 40, '#9b9b9b'],
+                    [14, 30, '#6f6f6f'],
+                    [20, 46, '#6f6f6f'],
+                    [26, 22, '#6f6f6f']
+                  ].map(([top, width, bg]) => (
+                    <div
+                      class="px"
+                      style={`left: 27px; top: ${top}px; width: ${width}px; height: 2px; background: ${bg}`}
+                    />
+                  ))
+                }
               </div>
               <div
                 class="px desk-quiet"
@@ -234,26 +115,11 @@ const presence = (on: boolean) => (on ? '' : undefined)
               >
               </div>
             </div>
-            <div class="mug">
-              <div
-                class="px"
-                style="left: 58px; bottom: 111px; width: 10px; height: 11px; background: #d8d8d8"
-              >
-              </div>
-              <div
-                class="px"
-                style="left: 68px; bottom: 114px; width: 4px; height: 5px; background: #b0b0b0"
-              >
-              </div>
-            </div>
             <div class="px chime" style="left: 160px; bottom: 182px">♪</div>
             <div class="px dim" style="inset: 0"></div>
           </div>
-
           <div class="home">
-            <div class="px" style="left: 106px; bottom: 98px; width: 36px; height: 4px; background: #9b9b9b">
-            </div>
-            <div class="px laptop" style="left: 104px; bottom: 102px; width: 4px; height: 24px"></div>
+            {HOME_FRONT.map((px) => <div class:list={['px', px.cls]} style={place(px)} />)}
           </div>
         </div>
       </div>
@@ -287,15 +153,15 @@ const presence = (on: boolean) => (on ? '' : undefined)
                     stroke-linecap="round"></line>
                   <circle cx="742" cy="742" r="46" style="fill: var(--accent)"></circle>
                 </svg>
-                <span class="lbl">[ <span data-ref="board-label">{initial.board.label}</span> ]</span>
+                <span class="lbl">[ <span data-text="boardLabel">{texts.boardLabel}</span> ]</span>
               </span>
               <span class="board-time">
-                <span class="now" data-ref="board-now">{initial.board.now}</span> · until <span
-                  data-ref="board-until">{initial.board.until}</span
+                <span class="now" data-text="boardNow">{texts.boardNow}</span> · until <span
+                  data-text="boardUntil">{texts.boardUntil}</span
                 >
               </span>
             </div>
-            <p class="board-count" data-ref="board-count">{initial.board.count}</p>
+            <p class="board-count" data-text="boardCount">{texts.boardCount}</p>
             <div class="board-rows">
               {
                 initial.sessions.map((row) => (
@@ -305,12 +171,7 @@ const presence = (on: boolean) => (on ? '' : undefined)
                     data-working={presence(row.working)}
                   >
                     <span class="mark">
-                      <span class="wm">
-                        <i />
-                        <i />
-                        <i />
-                        <i />
-                      </span>
+                      <WorkingMark />
                       <span class="dot" style="background: var(--neutral)" />
                     </span>
                     <span class="name">{row.name}</span>
@@ -324,17 +185,9 @@ const presence = (on: boolean) => (on ? '' : undefined)
             </div>
             <div class="board-foot">
               <span class="unlock">
-                <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                  <rect
-                    x="3"
-                    y="7"
-                    width="10"
-                    height="7"
-                    rx="1"
-                    style="stroke: var(--fg-muted)"
-                    stroke-width="1.5"></rect>
-                  <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0" style="stroke: var(--fg-muted)" stroke-width="1.5"
-                  ></path>
+                <svg class="icon" width="12" height="12" viewBox="0 0 16 16">
+                  <rect x="3" y="7" width="10" height="7" rx="1"></rect>
+                  <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0"></path>
                 </svg>
                 Unlock 20 min
               </span>
@@ -344,14 +197,9 @@ const presence = (on: boolean) => (on ? '' : undefined)
           <div class="window fade">
             <div class="side">
               <div class="side-top">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                  <circle cx="7" cy="7" r="4.5" style="stroke: var(--fg-muted)" stroke-width="1.5"
-                  ></circle>
-                  <path
-                    d="m10.5 10.5 3 3"
-                    style="stroke: var(--fg-muted)"
-                    stroke-width="1.5"
-                    stroke-linecap="round"></path>
+                <svg class="icon" width="14" height="14" viewBox="0 0 16 16">
+                  <circle cx="7" cy="7" r="4.5"></circle>
+                  <path d="m10.5 10.5 3 3" stroke-linecap="round"></path>
                 </svg>
               </div>
               <div class="side-head">
@@ -361,19 +209,11 @@ const presence = (on: boolean) => (on ? '' : undefined)
               <div class="side-head projects">
                 <span class="lbl">[ PROJECTS ]</span>
                 <span class="side-icons">
-                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-                    <path
-                      d="M2 4.5h4l1.5 1.5H14v6.5H2z"
-                      style="stroke: var(--fg-faint)"
-                      stroke-width="1.5"
-                      stroke-linejoin="round"></path>
+                  <svg class="icon faint" width="13" height="13" viewBox="0 0 16 16">
+                    <path d={ICONS.folder} stroke-linejoin="round"></path>
                   </svg>
-                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-                    <path
-                      d="M3 4h10M3 8h7M3 12h4"
-                      style="stroke: var(--fg-faint)"
-                      stroke-width="1.5"
-                      stroke-linecap="round"></path>
+                  <svg class="icon faint" width="13" height="13" viewBox="0 0 16 16">
+                    <path d="M3 4h10M3 8h7M3 12h4" stroke-linecap="round"></path>
                   </svg>
                 </span>
               </div>
@@ -381,13 +221,8 @@ const presence = (on: boolean) => (on ? '' : undefined)
                 PROJECTS.map((project) => (
                   <Fragment>
                     <div class="side-project">
-                      <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-                        <path
-                          d="M2 4.5h4l1.5 1.5H14v6.5H2z"
-                          style="stroke: var(--fg-muted)"
-                          stroke-width="1.5"
-                          stroke-linejoin="round"
-                        />
+                      <svg class="icon" width="13" height="13" viewBox="0 0 16 16">
+                        <path d={ICONS.folder} stroke-linejoin="round" />
                       </svg>
                       {project}
                     </div>
@@ -401,12 +236,7 @@ const presence = (on: boolean) => (on ? '' : undefined)
                           data-selected={presence(row.selected)}
                         >
                           <span class="mark">
-                            <span class="wm">
-                              <i />
-                              <i />
-                              <i />
-                              <i />
-                            </span>
+                            <WorkingMark />
                             <span class="dot" style={`background: var(--${row.dot})`} />
                           </span>
                           <span class="name" style={`color: var(--${row.text})`}>
@@ -433,22 +263,19 @@ const presence = (on: boolean) => (on ? '' : undefined)
                 </div>
                 <div class="foot-unlocked">
                   <span class="foot-word">Unlocked</span>
-                  <span class="countdown" data-ref="countdown">{initial.countdown}</span>
+                  <span class="countdown" data-text="countdown">{texts.countdown}</span>
                   <span class="spacer"></span>
                   <span class="pick">lock now</span>
                 </div>
                 <div class="foot-icons">
-                  <svg class="report-icon" width="13" height="13" viewBox="0 0 16 16" fill="none">
-                    <path d="M3.5 1.5h9v13h-9z" stroke="currentColor" stroke-width="1.5"></path>
-                    <path d="M6 5h4M6 8h4M6 11h3" stroke="currentColor" stroke-width="1.5"></path>
+                  <svg class="icon report-icon" width="13" height="13" viewBox="0 0 16 16">
+                    <path d="M3.5 1.5h9v13h-9z"></path>
+                    <path d="M6 5h4M6 8h4M6 11h3"></path>
                   </svg>
-                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-                    <circle cx="8" cy="8" r="2.2" style="stroke: var(--fg-muted)" stroke-width="1.5"
-                    ></circle>
+                  <svg class="icon" width="13" height="13" viewBox="0 0 16 16">
+                    <circle cx="8" cy="8" r="2.2"></circle>
                     <path
                       d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M3.4 12.6l1.4-1.4M11.2 4.8l1.4-1.4"
-                      style="stroke: var(--fg-muted)"
-                      stroke-width="1.5"
                       stroke-linecap="round"></path>
                   </svg>
                   <span class="spacer"></span>
@@ -488,28 +315,14 @@ const presence = (on: boolean) => (on ? '' : undefined)
                   <div class="tab-plus">+</div>
                   <span class="spacer"></span>
                   <div class="tab-tools">
-                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-                      <rect
-                        x="2"
-                        y="3"
-                        width="12"
-                        height="10"
-                        rx="1"
-                        style="stroke: var(--fg-faint)"
-                        stroke-width="1.5"></rect>
-                      <path d="M8 3v10" style="stroke: var(--fg-faint)" stroke-width="1.5"></path>
-                    </svg>
-                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-                      <rect
-                        x="2"
-                        y="3"
-                        width="12"
-                        height="10"
-                        rx="1"
-                        style="stroke: var(--fg-faint)"
-                        stroke-width="1.5"></rect>
-                      <path d="M2 8h12" style="stroke: var(--fg-faint)" stroke-width="1.5"></path>
-                    </svg>
+                    {
+                      ICONS.splits.map((split) => (
+                        <svg class="icon faint" width="13" height="13" viewBox="0 0 16 16">
+                          <rect x="2" y="3" width="12" height="10" rx="1" />
+                          <path d={split} />
+                        </svg>
+                      ))
+                    }
                   </div>
                 </div>
                 <div class="term">
@@ -531,15 +344,13 @@ const presence = (on: boolean) => (on ? '' : undefined)
                     </div>
                   </div>
                   <div class="status">
-                    <span class="spin" data-ref="spin">{`${terminal.spinner} ${terminal.verb}`}</span>
-                    <span class="faint" data-ref="seconds"
-                      >{` (${terminal.seconds}s · esc to interrupt)`}</span
-                    >
+                    <span class="spin" data-text="spin">{texts.spin}</span>
+                    <span class="faint" data-text="seconds">{texts.seconds}</span>
                   </div>
                   <div class="input-view">
                     <div class="input">
                       <span class="muted">{'> '}</span>
-                      <span data-ref="input">{terminal.input}</span>
+                      <span data-text="input">{texts.input}</span>
                       <span class="cursor"></span>
                     </div>
                     <div class="mode">
@@ -554,35 +365,20 @@ const presence = (on: boolean) => (on ? '' : undefined)
             <div class="rail">
               <div class="rail-top">«</div>
               <div class="rail-rule"></div>
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                <circle cx="4.5" cy="3.5" r="1.5" style="stroke: var(--fg-muted)" stroke-width="1.5"
-                ></circle>
-                <circle cx="4.5" cy="12.5" r="1.5" style="stroke: var(--fg-muted)" stroke-width="1.5"
-                ></circle>
-                <circle cx="11.5" cy="12.5" r="1.5" style="stroke: var(--fg-muted)" stroke-width="1.5"
-                ></circle>
-                <path
-                  d="M4.5 5v6M11.5 11V6.5L9.5 4.5"
-                  style="stroke: var(--fg-muted)"
-                  stroke-width="1.5"></path>
+              <svg class="icon" width="14" height="14" viewBox="0 0 16 16">
+                <circle cx="4.5" cy="3.5" r="1.5"></circle>
+                <circle cx="4.5" cy="12.5" r="1.5"></circle>
+                <circle cx="11.5" cy="12.5" r="1.5"></circle>
+                <path d="M4.5 5v6M11.5 11V6.5L9.5 4.5"></path>
               </svg>
-              <span class="rail-count" data-ref="prs">{initial.prs}</span>
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                <path
-                  d="M3.5 1.5h6l3 3v10h-9z"
-                  style="stroke: var(--fg-muted)"
-                  stroke-width="1.5"
-                  stroke-linejoin="round"></path>
-                <path d="M6 7h4M8 5v4M6 11.5h4" style="stroke: var(--fg-muted)" stroke-width="1.5"
-                ></path>
+              <span class="rail-count" data-text="prs">{texts.prs}</span>
+              <svg class="icon" width="14" height="14" viewBox="0 0 16 16">
+                <path d="M3.5 1.5h6l3 3v10h-9z" stroke-linejoin="round"></path>
+                <path d="M6 7h4M8 5v4M6 11.5h4"></path>
               </svg>
-              <span class="rail-count" data-ref="changes">{initial.changes}</span>
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                <path
-                  d="M2 4.5h4l1.5 1.5H14v6.5H2z"
-                  style="stroke: var(--fg-muted)"
-                  stroke-width="1.5"
-                  stroke-linejoin="round"></path>
+              <span class="rail-count" data-text="changes">{texts.changes}</span>
+              <svg class="icon" width="14" height="14" viewBox="0 0 16 16">
+                <path d={ICONS.folder} stroke-linejoin="round"></path>
               </svg>
             </div>
           </div>
@@ -591,8 +387,8 @@ const presence = (on: boolean) => (on ? '' : undefined)
     </div>
   </div>
 
-  <p class="caption" aria-hidden="true" data-ref="caption" data-pagefind-ignore>
-    {STEPS[initial.step].caption}
+  <p class="caption" aria-hidden="true" data-text="caption" data-pagefind-ignore>
+    {texts.caption}
   </p>
 
   <div class="timeline" data-pagefind-ignore>
@@ -629,7 +425,7 @@ const presence = (on: boolean) => (on ? '' : undefined)
 </section>
 
 <script>
-  import { LOOP_TICKS, SPRITES, STEPS, TICK_MS, dayState, stepOf, stepTick } from '../lib/day'
+  import { LOOP_TICKS, SPRITES, TICK_MS, dayState, stepOf, stepTick } from '../lib/day'
   import type { DayState, TermLine } from '../lib/day'
 
   for (const root of document.querySelectorAll<HTMLElement>('[data-day]')) {
@@ -645,23 +441,13 @@ const presence = (on: boolean) => (on ? '' : undefined)
       return el
     }
     const ref = (name: string) => find(root, `[data-ref="${name}"]`)
-    const caption = ref('caption')
     const person = ref('person')
     const sprite = ref('sprite')
     const lines = ref('lines')
     const deskDots = [...root.querySelectorAll<HTMLElement>('[data-ref="desk-dot"]')]
-    const texts = {
-      boardLabel: ref('board-label'),
-      boardNow: ref('board-now'),
-      boardUntil: ref('board-until'),
-      boardCount: ref('board-count'),
-      countdown: ref('countdown'),
-      spin: ref('spin'),
-      seconds: ref('seconds'),
-      input: ref('input'),
-      prs: ref('prs'),
-      changes: ref('changes')
-    }
+    const texts = new Map(
+      [...root.querySelectorAll<HTMLElement>('[data-text]')].map((el) => [el.dataset.text, el])
+    )
     const sessions = new Map(
       [...root.querySelectorAll<HTMLElement>('.side-row')].map((side) => {
         const name = side.dataset.session ?? ''
@@ -681,6 +467,39 @@ const presence = (on: boolean) => (on ? '' : undefined)
     const buttons = [...root.querySelectorAll<HTMLButtonElement>('button[data-step]')]
     let drawnLines = ''
 
+    // What each element was last given, so a tick touches the page only where
+    // something changed.
+    const written = new WeakMap<Element, Map<string, string | null>>()
+    const changed = (el: Element, key: string, value: string | null) => {
+      const last = written.get(el) ?? new Map<string, string | null>()
+      written.set(el, last)
+      if (last.has(key) && last.get(key) === value) {
+        return false
+      }
+      last.set(key, value)
+      return true
+    }
+    const setText = (el: HTMLElement, value: string) => {
+      if (changed(el, 'text', value)) {
+        el.textContent = value
+      }
+    }
+    const setStyle = (el: HTMLElement, property: string, value: string) => {
+      if (changed(el, `style ${property}`, value)) {
+        el.style.setProperty(property, value)
+      }
+    }
+    const setAttr = (el: Element, name: string, value: string | null) => {
+      if (changed(el, `attr ${name}`, value)) {
+        if (value === null) {
+          el.removeAttribute(name)
+        } else {
+          el.setAttribute(name, value)
+        }
+      }
+    }
+    const presence = (on: boolean) => (on ? '' : null)
+
     function lineElement(line: TermLine) {
       const el = document.createElement('div')
       el.className = 'line'
@@ -697,55 +516,41 @@ const presence = (on: boolean) => (on ? '' : undefined)
 
     function draw(s: DayState) {
       for (const [name, on] of Object.entries(s.flags)) {
-        root.toggleAttribute(`data-${name}`, on)
+        setAttr(root, `data-${name}`, presence(on))
       }
-      caption.textContent = STEPS[s.step].caption
-      buttons.forEach((button, i) => {
-        if (i === s.step) {
-          button.setAttribute('aria-current', 'step')
-        } else {
-          button.removeAttribute('aria-current')
+      buttons.forEach((button, i) => setAttr(button, 'aria-current', i === s.step ? 'step' : null))
+      for (const [name, value] of Object.entries(s.texts)) {
+        const el = texts.get(name)
+        if (el) {
+          setText(el, value)
         }
-      })
+      }
 
       const p = s.person
-      person.style.transitionDuration = `${p.walkSeconds}s`
-      person.style.left = `${p.left}px`
-      person.style.bottom = `${p.bottom}px`
-      person.style.transform = p.facing === 'right' ? 'scaleX(-1)' : 'none'
-      sprite.style.boxShadow = SPRITES[p.pose]
-      deskDots.forEach((dot, i) => {
-        dot.style.background = `var(--${s.deskDots[i]})`
-      })
+      setStyle(person, 'transition-duration', `${p.walkSeconds}s`)
+      setStyle(person, 'left', `${p.left}px`)
+      setStyle(person, 'bottom', `${p.bottom}px`)
+      setStyle(person, 'transform', p.facing === 'right' ? 'scaleX(-1)' : 'none')
+      setStyle(sprite, 'box-shadow', SPRITES[p.pose])
+      deskDots.forEach((dot, i) => setStyle(dot, 'background', `var(--${s.deskDots[i]})`))
 
       for (const row of s.sessions) {
         const els = sessions.get(row.name)
         if (!els) {
           continue
         }
-        els.side.toggleAttribute('data-working', row.working)
-        els.side.toggleAttribute('data-selected', row.selected)
-        els.dot.style.background = `var(--${row.dot})`
-        els.name.style.color = `var(--${row.text})`
-        els.board.toggleAttribute('data-working', row.working)
-        els.word.textContent = row.word
+        setAttr(els.side, 'data-working', presence(row.working))
+        setAttr(els.side, 'data-selected', presence(row.selected))
+        setStyle(els.dot, 'background', `var(--${row.dot})`)
+        setStyle(els.name, 'color', `var(--${row.text})`)
+        setAttr(els.board, 'data-working', presence(row.working))
+        setText(els.word, row.word)
       }
 
-      texts.boardLabel.textContent = s.board.label
-      texts.boardNow.textContent = s.board.now
-      texts.boardUntil.textContent = s.board.until
-      texts.boardCount.textContent = s.board.count
-      texts.countdown.textContent = s.countdown
-      texts.spin.textContent = `${s.terminal.spinner} ${s.terminal.verb}`
-      texts.seconds.textContent = ` (${s.terminal.seconds}s · esc to interrupt)`
-      texts.input.textContent = s.terminal.input
-      texts.prs.textContent = s.prs
-      texts.changes.textContent = s.changes
-
-      const key = s.terminal.lines.map((line) => `${line.kind} ${line.pre}${line.text}`).join('\n')
+      const key = s.lines.map((line) => `${line.kind} ${line.pre}${line.text}`).join('\n')
       if (key !== drawnLines) {
         drawnLines = key
-        lines.replaceChildren(...s.terminal.lines.map(lineElement))
+        lines.replaceChildren(...s.lines.map(lineElement))
       }
     }
 
@@ -821,7 +626,7 @@ const presence = (on: boolean) => (on ? '' : undefined)
 
 <style>
   .day {
-    /* que's dark palette, fixed: the animation is dark in both site themes, like the app. */
+    /* que's dark tokens, fixed on purpose (the animation stays dark in both site themes), not the site theme's variables. */
     --bg: #181818;
     --bg-side: #111111;
     --bg-active: #2c2c2c;
@@ -891,7 +696,7 @@ const presence = (on: boolean) => (on ? '' : undefined)
   .day:not([data-permission]) .permission,
   .day:not([data-status]) .status,
   .session[data-working] .dot,
-  .session:not([data-working]) .wm {
+  .session:not([data-working]) :global(.wm) {
     display: none;
   }
 
@@ -960,6 +765,7 @@ const presence = (on: boolean) => (on ? '' : undefined)
   }
   .sky {
     box-sizing: border-box;
+    border: 5px solid #3a3a3a;
     background: #62686f;
     transition: background 1.5s ease;
   }
@@ -968,6 +774,7 @@ const presence = (on: boolean) => (on ? '' : undefined)
   }
   .home-window {
     box-sizing: border-box;
+    border: 5px solid #3a3836;
   }
   .lamp-glow {
     border-radius: 50%;
@@ -1051,6 +858,18 @@ const presence = (on: boolean) => (on ? '' : undefined)
   .fade {
     animation: day-fadein 0.5s ease both;
   }
+  /* The window's line icons: one stroke, muted, or faint with .faint. */
+  .icon {
+    fill: none;
+    stroke: var(--fg-muted);
+    stroke-width: 1.5;
+  }
+  .icon.faint {
+    stroke: var(--fg-faint);
+  }
+  .report-icon {
+    stroke: currentColor;
+  }
   .lbl {
     font-family: var(--mono);
     font-size: 10px;
@@ -1064,27 +883,6 @@ const presence = (on: boolean) => (on ? '' : undefined)
     width: 10px;
     display: flex;
     justify-content: center;
-  }
-  .wm {
-    display: inline-grid;
-    grid-template-columns: 3px 3px;
-    gap: 2px;
-    width: 8px;
-    flex: none;
-  }
-  .wm i {
-    width: 3px;
-    height: 3px;
-    border-radius: 50%;
-    background: var(--accent);
-    animation: day-ripple 1.2s ease-in-out infinite;
-  }
-  .wm i:nth-child(2),
-  .wm i:nth-child(3) {
-    animation-delay: 0.15s;
-  }
-  .wm i:nth-child(4) {
-    animation-delay: 0.3s;
   }
   .dot {
     width: 5px;
@@ -1616,15 +1414,6 @@ const presence = (on: boolean) => (on ? '' : undefined)
     outline-offset: 2px;
   }
 
-  @keyframes day-ripple {
-    0%,
-    100% {
-      opacity: 0.25;
-    }
-    50% {
-      opacity: 1;
-    }
-  }
   @keyframes day-floatup {
     from {
       opacity: 1;
@@ -1665,7 +1454,7 @@ const presence = (on: boolean) => (on ? '' : undefined)
 
   /* Paused: what loops stops where it is, and nothing glides. Fades still run,
      so a step jumped to while paused appears instead of staying at its first frame. */
-  .day[data-paused] .wm i,
+  .day[data-paused] :global(.wm i),
   .day[data-paused] .cursor,
   .day[data-paused] .desk-quiet,
   .day[data-paused] .chime {

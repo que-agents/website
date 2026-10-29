@@ -1,0 +1,64 @@
+---
+// The home page's two buttons under its hero: the latest release's disk image,
+// from src/data/release.json (which scripts/fetch-release.mjs writes at build
+// time), and the docs.
+import release from '../data/release.json'
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '')
+---
+
+<div class="hero-actions not-content">
+  <a class="button" href={release.dmg.url}>
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path
+        d="M8 2v8M4.5 6.5 8 10l3.5-3.5M3 13h10"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"></path>
+    </svg>
+    Download for macOS
+  </a>
+  <a class="button secondary" href={`${base}/guides/overview/`}>Docs</a>
+</div>
+
+<style>
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-block: 0;
+  }
+  /* The primary button: light on dark (que's --inverse). */
+  .button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    min-height: 44px;
+    padding: 0.75rem 1.25rem;
+    border: 1px solid var(--sl-color-white);
+    border-radius: 2px;
+    background: var(--sl-color-white);
+    color: var(--sl-color-black);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.25;
+    text-decoration: none;
+  }
+  .button:hover {
+    border-color: var(--sl-color-gray-2);
+    background: var(--sl-color-gray-2);
+  }
+  /* The secondary button: an outline (que's --border-strong) that fills on hover. */
+  .secondary {
+    border-color: var(--sl-color-gray-5);
+    background: transparent;
+    color: var(--sl-color-white);
+    font-weight: 400;
+  }
+  .secondary:hover {
+    border-color: var(--sl-color-gray-5);
+    background: var(--sl-color-bg-inline-code);
+  }
+</style>

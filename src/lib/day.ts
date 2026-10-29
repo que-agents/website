@@ -132,6 +132,78 @@ export const SPRITES: Readonly<Record<Pose | 'colleague', string>> = {
   colleague: boxShadow([...HEAD, '.sttttttt.', '..tttttt..', ...STAND_LEGS], THEM)
 }
 
+/**
+ * A rectangle of the pixel scene, placed from the scene's bottom-left corner:
+ * a size of '100%' runs to the far edge. `cls` names the few that CSS draws
+ * or shows and hides (the sky, the home window, the lamp's glow, the laptop's
+ * screen, the stars, the mug).
+ */
+export interface Px {
+  x: number
+  y: number
+  w: number | '100%'
+  h: number | '100%'
+  bg?: string
+  cls?: string
+}
+
+/** Behind the person at the office: wall, floor, window, plant, chair, side table. */
+export const OFFICE_BACK: readonly Px[] = [
+  { x: 0, y: 0, w: '100%', h: '100%', bg: '#232323' },
+  { x: 0, y: 0, w: '100%', h: 75, bg: '#1a1a1a' },
+  { x: 0, y: 70, w: '100%', h: 5, bg: '#2c2c2c' },
+  { x: 245, y: 215, w: 120, h: 110, cls: 'sky' },
+  { x: 302, y: 215, w: 5, h: 110, bg: '#3a3a3a' },
+  { x: 245, y: 267, w: 120, h: 5, bg: '#3a3a3a' },
+  { x: 335, y: 290, w: 15, h: 15, bg: '#e6e2cf', cls: 'stars' },
+  { x: 262, y: 300, w: 3, h: 3, bg: '#9b9b9b', cls: 'stars' },
+  { x: 322, y: 240, w: 3, h: 3, bg: '#9b9b9b', cls: 'stars' },
+  { x: 8, y: 75, w: 20, h: 18, bg: '#5c4636' },
+  { x: 3, y: 93, w: 10, h: 10, bg: '#4f7a52' },
+  { x: 13, y: 98, w: 10, h: 15, bg: '#5d8c60' },
+  { x: 23, y: 93, w: 10, h: 10, bg: '#4f7a52' },
+  { x: 208, y: 75, w: 6, h: 9, bg: '#3a3a3a' },
+  { x: 194, y: 79, w: 40, h: 6, bg: '#444444' },
+  { x: 228, y: 79, w: 6, h: 60, bg: '#444444' },
+  { x: 300, y: 103, w: 80, h: 8, bg: '#5b4b3c' },
+  { x: 306, y: 75, w: 8, h: 28, bg: '#4a3d31' },
+  { x: 366, y: 75, w: 8, h: 28, bg: '#4a3d31' }
+]
+
+/** In front of the person at the office: the desk, the monitor's stand and bezel, the mug. */
+export const OFFICE_FRONT: readonly Px[] = [
+  { x: 40, y: 103, w: 172, h: 8, bg: '#5b4b3c' },
+  { x: 44, y: 75, w: 8, h: 28, bg: '#4a3d31' },
+  { x: 200, y: 75, w: 8, h: 28, bg: '#4a3d31' },
+  { x: 120, y: 111, w: 10, h: 9, bg: '#303030' },
+  { x: 80, y: 120, w: 90, h: 56, bg: '#303030' },
+  { x: 58, y: 111, w: 10, h: 11, bg: '#d8d8d8', cls: 'mug' },
+  { x: 68, y: 114, w: 4, h: 5, bg: '#b0b0b0', cls: 'mug' }
+]
+
+/** Behind the person at home: wall, floor, the night window, the lamp, the sofa. */
+export const HOME_BACK: readonly Px[] = [
+  { x: 0, y: 0, w: '100%', h: '100%', bg: '#211f1e' },
+  { x: 0, y: 0, w: '100%', h: 75, bg: '#191817' },
+  { x: 0, y: 70, w: '100%', h: 5, bg: '#2a2826' },
+  { x: 300, y: 210, w: 120, h: 100, bg: '#0e1013', cls: 'home-window' },
+  { x: 390, y: 270, w: 15, h: 15, bg: '#e6e2cf' },
+  { x: 320, y: 285, w: 3, h: 3, bg: '#9b9b9b' },
+  { x: 350, y: 235, w: 3, h: 3, bg: '#9b9b9b' },
+  { x: 214, y: 110, w: 110, h: 110, cls: 'lamp-glow' },
+  { x: 267, y: 75, w: 4, h: 118, bg: '#3a3836' },
+  { x: 253, y: 190, w: 32, h: 18, bg: '#cdb98f' },
+  { x: 30, y: 75, w: 220, h: 22, bg: '#4a4038' },
+  { x: 210, y: 75, w: 34, h: 75, bg: '#564a40' },
+  { x: 25, y: 75, w: 22, h: 42, bg: '#564a40' }
+]
+
+/** In front of the person at home: the laptop on their lap. */
+export const HOME_FRONT: readonly Px[] = [
+  { x: 106, y: 98, w: 36, h: 4, bg: '#9b9b9b' },
+  { x: 104, y: 102, w: 4, h: 24, cls: 'laptop' }
+]
+
 /** A colour token of the animation's fixed palette; the component writes it as var(--name). */
 export type Tone =
   | 'fg'
@@ -154,40 +226,109 @@ const TONE: Record<Status, Tone> = {
 
 export const PROJECTS = ['uploader', 'billing'] as const
 
-/** The sessions, in the order the sidebar (grouped by project) and the board list them. */
-export const SESSIONS: readonly { name: string; project: (typeof PROJECTS)[number] }[] = [
-  { name: 'app-142-retry', project: 'uploader' },
-  { name: 'app-145-backoff-docs', project: 'uploader' },
-  { name: 'app-131-cache', project: 'uploader' },
-  { name: 'app-139-auth', project: 'billing' },
-  { name: 'app-150-migrate', project: 'billing' }
-]
-
-/** The morning report's rows. */
-export const REPORT_ROWS: readonly {
+interface Session {
   name: string
-  project: string
-  dot: Tone
-  tag: string
-  tagTone: Tone
-}[] = [
-  { name: 'app-142-retry', project: 'uploader', dot: 'good', tag: '#88', tagTone: 'accent' },
-  { name: 'app-145-backoff-docs', project: 'uploader', dot: 'good', tag: '#89', tagTone: 'accent' },
+  project: (typeof PROJECTS)[number]
+  /**
+   * The session's status at each step: working, done (not yet seen), seen, or
+   * needs input; or [before, after, beat] when it changes during the step.
+   */
+  plan: readonly (Status | readonly [Status, Status, number])[]
+}
+
+/** The sessions, in the order the sidebar (grouped by project) and the board list them. */
+const SESSIONS: readonly Session[] = [
+  {
+    name: 'app-142-retry',
+    project: 'uploader',
+    plan: ['done', 'working', 'working', 'working', 'working', 'working']
+  },
+  {
+    name: 'app-145-backoff-docs',
+    project: 'uploader',
+    plan: ['done', 'working', 'working', 'done', 'seen', 'seen']
+  },
+  {
+    name: 'app-131-cache',
+    project: 'uploader',
+    plan: ['seen', ['working', 'done', 10], 'done', 'seen', 'seen', 'seen']
+  },
   {
     name: 'app-139-auth',
     project: 'billing',
-    dot: 'attention',
-    tag: 'needs input',
-    tagTone: 'attention'
+    plan: ['needs', 'working', 'needs', ['needs', 'working', 12], 'working', 'working']
   },
   {
     name: 'app-150-migrate',
     project: 'billing',
-    dot: 'accent',
-    tag: 'working',
-    tagTone: 'fg-muted'
-  },
-  { name: 'app-131-cache', project: 'uploader', dot: 'neutral', tag: 'idle', tagTone: 'fg-faint' }
+    plan: ['working', 'seen', 'seen', 'seen', 'working', 'working']
+  }
+]
+
+function statusOf(name: string, step: number, beat: number): Status {
+  const planned = session(name).plan[step]
+  if (typeof planned === 'string') {
+    return planned
+  }
+  const [before, after, at] = planned
+  return beat < at ? before : after
+}
+
+function session(name: string): Session {
+  const found = SESSIONS.find((s) => s.name === name)
+  if (!found) {
+    throw new Error(`no session ${name}`)
+  }
+  return found
+}
+
+/** The morning report's rows: each session as the night left it, and what it left. */
+export const REPORT_ROWS = (
+  [
+    ['app-142-retry', '#88', 'accent'],
+    ['app-145-backoff-docs', '#89', 'accent'],
+    ['app-139-auth', 'needs input', 'attention'],
+    ['app-150-migrate', 'working', 'fg-muted'],
+    ['app-131-cache', 'idle', 'fg-faint']
+  ] as const
+).map(([name, tag, tagTone]) => ({
+  name,
+  project: session(name).project,
+  dot: TONE[statusOf(name, 0, 0)],
+  tag,
+  tagTone
+}))
+
+/** The session in front of the window at each step; none while the report is open. */
+const IN_FRONT = [
+  '',
+  'app-142-retry',
+  'app-142-retry',
+  'app-139-auth',
+  'app-142-retry',
+  'app-142-retry'
+]
+
+/**
+ * The quiet board at the steps that show it: its label, the beat it appears
+ * at, the time it shows n beats later, and when the quiet ends.
+ */
+const BOARDS: Partial<
+  Record<number, { label: string; from: number; now: (n: number) => string; until: string }>
+> = {
+  2: { label: 'QUIET', from: 4, now: (n) => `11:${pad(n * 3)}`, until: '12:00' },
+  4: { label: 'QUIET HOURS', from: 4, now: (n) => `18:${pad(n * 3)}`, until: '08:00' },
+  5: { label: 'QUIET HOURS', from: 14, now: (n) => `22:${pad(28 + n)}`, until: '08:00' }
+}
+
+/** Claude Code's spinner line at each step: its verb, and the beat its seconds count from. */
+const THINKING: readonly { verb: string; since: number }[] = [
+  { verb: 'Noodling…', since: 5 },
+  { verb: 'Noodling…', since: -20 },
+  { verb: 'Noodling…', since: -40 },
+  { verb: 'Brewing…', since: 11 },
+  { verb: 'Noodling…', since: 5 },
+  { verb: 'Pondering…', since: 5 }
 ]
 
 export interface SessionRow {
@@ -240,12 +381,29 @@ export interface Flags {
   status: boolean
 }
 
+/** Every text that changes, by the name of the element that shows it (its data-text). */
+export interface Texts {
+  /** The line under the animation. */
+  caption: string
+  boardLabel: string
+  boardNow: string
+  boardUntil: string
+  /** The board's count line, e.g. "3 working · 1 waiting · 1 idle". */
+  boardCount: string
+  /** The unlocked foot's time left, m:ss. */
+  countdown: string
+  /** The spinner line: its glyph and verb, then how long it has been going. */
+  spin: string
+  seconds: string
+  /** What is typed in Claude Code's input box. */
+  input: string
+  /** The review rail's counts: pull requests and changed files. */
+  prs: string
+  changes: string
+}
+
 export interface DayState {
-  /** The tick, 0 to 119. */
-  tick: number
   step: number
-  /** The tick within the step, 0 to 19. */
-  beat: number
   flags: Flags
   person: {
     left: number
@@ -258,26 +416,9 @@ export interface DayState {
   /** The three status dots on the desk monitor's tiny sidebar. */
   deskDots: [Tone, Tone, Tone]
   sessions: SessionRow[]
-  board: {
-    label: string
-    now: string
-    until: string
-    /** The count line, e.g. "3 working · 1 waiting · 1 idle". */
-    count: string
-  }
-  /** The unlocked foot's time left, m:ss. */
-  countdown: string
-  terminal: {
-    lines: TermLine[]
-    /** What is typed in the input box. */
-    input: string
-    spinner: string
-    verb: string
-    seconds: number
-  }
-  /** The review rail's counts: pull requests and changed files. */
-  prs: string
-  changes: string
+  /** The Claude Code terminal's lines, oldest first. */
+  lines: TermLine[]
+  texts: Texts
 }
 
 // The terminal: a Claude Code session, drawn the way its TUI draws it.
@@ -336,7 +477,9 @@ function wrap(tick: number): number {
   return ((Math.floor(tick) % LOOP_TICKS) + LOOP_TICKS) % LOOP_TICKS
 }
 
-const pad = (n: number) => String(n).padStart(2, '0')
+function pad(n: number): string {
+  return String(n).padStart(2, '0')
+}
 
 /** Everything the animation shows at a tick; any integer wraps into the 120-tick loop. */
 export function dayState(tick: number): DayState {
@@ -386,41 +529,28 @@ export function dayState(tick: number): DayState {
     bottom = 80
   }
 
-  const board = (step === 2 && k >= 4) || (step === 4 && k >= 4) || (step === 5 && k >= 14)
+  // Steps without a board keep the last board's text; it is hidden.
+  const quiet = BOARDS[step]
+  const shown = quiet ?? BOARDS[5]!
+  const board = quiet !== undefined && k >= quiet.from
   const unlocked = step === 5 && k < 14
   const secondsLeft = 20 * 60 - 1 - k * 3
 
-  // Each session's status at each step: working, done (not yet seen), seen, or needs input.
-  const plan: Record<string, Status[]> = {
-    'app-142-retry': ['done', 'working', 'working', 'working', 'working', 'working'],
-    'app-145-backoff-docs': ['done', 'working', 'working', 'done', 'seen', 'seen'],
-    'app-131-cache': ['seen', k >= 10 ? 'done' : 'working', 'done', 'seen', 'seen', 'seen'],
-    'app-139-auth': [
-      'needs',
-      'working',
-      'needs',
-      k >= 12 ? 'working' : 'needs',
-      'working',
-      'working'
-    ],
-    'app-150-migrate': ['working', 'seen', 'seen', 'seen', 'working', 'working']
-  }
-  const selected = step === 3 ? 'app-139-auth' : step === 0 ? '' : 'app-142-retry'
   const sessions = SESSIONS.map(({ name, project }): SessionRow => {
-    const status = plan[name][step]
-    const isSelected = name === selected
+    const status = statusOf(name, step, k)
+    const selected = name === IN_FRONT[step]
     return {
       name,
       project,
       working: status === 'working',
       dot: TONE[status],
       text:
-        isSelected || status === 'done' || status === 'needs'
+        selected || status === 'done' || status === 'needs'
           ? 'fg'
           : status === 'working'
             ? 'fg-secondary'
             : 'fg-faint',
-      selected: isSelected,
+      selected,
       word: status === 'working' ? 'working' : status === 'needs' ? 'waiting' : 'idle'
     }
   })
@@ -467,10 +597,10 @@ export function dayState(tick: number): DayState {
     }
   }
 
+  const thinking = THINKING[step]
+
   return {
-    tick: t,
     step,
-    beat: k,
     flags: {
       home: step === 5,
       night: step === 4,
@@ -492,31 +622,24 @@ export function dayState(tick: number): DayState {
     },
     person: { left, bottom, facing, pose, walkSeconds },
     deskDots: [
-      TONE[plan['app-142-retry'][step]],
-      TONE[plan['app-145-backoff-docs'][step]],
-      TONE[plan['app-139-auth'][step]]
+      TONE[statusOf('app-142-retry', step, k)],
+      TONE[statusOf('app-145-backoff-docs', step, k)],
+      TONE[statusOf('app-139-auth', step, k)]
     ],
     sessions,
-    board: {
-      label: step === 2 ? 'QUIET' : 'QUIET HOURS',
-      now:
-        step === 2
-          ? `11:${pad((k - 4) * 3)}`
-          : step === 4
-            ? `18:${pad((k - 4) * 3)}`
-            : `22:${pad(28 + (k - 14))}`,
-      until: step === 2 ? '12:00' : '08:00',
-      count
-    },
-    countdown: `${Math.floor(secondsLeft / 60)}:${pad(secondsLeft % 60)}`,
-    terminal: {
-      lines,
+    lines,
+    texts: {
+      caption: STEPS[step].caption,
+      boardLabel: shown.label,
+      boardNow: shown.now(k - shown.from),
+      boardUntil: shown.until,
+      boardCount: count,
+      countdown: `${Math.floor(secondsLeft / 60)}:${pad(secondsLeft % 60)}`,
+      spin: `${SPINNER[t % 6]} ${thinking.verb}`,
+      seconds: ` (${k - thinking.since}s · esc to interrupt)`,
       input,
-      spinner: SPINNER[t % 6],
-      verb: step === 3 ? 'Brewing…' : step === 5 ? 'Pondering…' : 'Noodling…',
-      seconds: step === 1 ? 20 + k : step === 2 ? 40 + k : step === 3 ? k - 11 : k - 5
-    },
-    prs: step === 0 ? '2' : '1',
-    changes: step === 3 ? '2' : '3'
+      prs: step === 0 ? '2' : '1',
+      changes: step === 3 ? '2' : '3'
+    }
   }
 }

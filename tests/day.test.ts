@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   LOOP_TICKS,
+  REPORT_ROWS,
   SPRITES,
   STEPS,
   TICKS_PER_STEP,
@@ -10,7 +11,7 @@ import {
   stepTick
 } from '../src/lib/day'
 
-const texts = (tick: number) => dayState(tick).terminal.lines.map((line) => line.text)
+const lineTexts = (tick: number) => dayState(tick).lines.map((line) => line.text)
 const ticks = Array.from({ length: LOOP_TICKS }, (_, t) => t)
 
 describe('the steps', () => {
@@ -29,9 +30,7 @@ describe('the steps', () => {
 
   it('change every 20 ticks', () => {
     expect([0, 19, 20, 39, 40, 99, 100, 119].map(stepOf)).toEqual([0, 0, 1, 1, 2, 4, 5, 5])
-    expect(dayState(19)).toMatchObject({ step: 0, beat: 19 })
-    expect(dayState(20)).toMatchObject({ step: 1, beat: 0 })
-    expect(dayState(119)).toMatchObject({ step: 5, beat: 19 })
+    expect([19, 20, 119].map((t) => dayState(t).step)).toEqual([0, 1, 5])
   })
 
   it('wrap any tick into the loop', () => {
@@ -63,6 +62,11 @@ describe('the steps', () => {
 })
 
 describe('the quiet board', () => {
+  const board = (t: number) => {
+    const { boardLabel, boardNow, boardUntil, boardCount } = dayState(t).texts
+    return [boardLabel, boardNow, boardUntil, boardCount]
+  }
+
   it('shows from 11:00 (step 3, beat 4), from 18:00 (step 5, beat 4) and after the unlock', () => {
     const boardTicks = ticks.filter((t) => dayState(t).flags.board)
     expect(boardTicks).toEqual([
@@ -72,20 +76,12 @@ describe('the quiet board', () => {
     ])
   })
 
-  it('counts the sessions by what the board says', () => {
-    expect(dayState(44).board).toEqual({
-      label: 'QUIET',
-      now: '11:00',
-      until: '12:00',
-      count: '2 working · 1 waiting · 2 idle'
-    })
-    expect(dayState(84).board).toEqual({
-      label: 'QUIET HOURS',
-      now: '18:00',
-      until: '08:00',
-      count: '3 working · 2 idle'
-    })
-    expect(dayState(119).board.now).toBe('22:33')
+  it('counts the sessions by what the board says, and tells the time three minutes a beat', () => {
+    expect(board(44)).toEqual(['QUIET', '11:00', '12:00', '2 working · 1 waiting · 2 idle'])
+    expect(board(59)).toEqual(['QUIET', '11:45', '12:00', '2 working · 1 waiting · 2 idle'])
+    expect(board(84)).toEqual(['QUIET HOURS', '18:00', '08:00', '3 working · 2 idle'])
+    expect(board(114)).toEqual(['QUIET HOURS', '22:28', '08:00', '3 working · 2 idle'])
+    expect(board(119)[1]).toBe('22:33')
   })
 
   it('lists each session in the sidebar order with the word the board shows', () => {
@@ -95,6 +91,50 @@ describe('the quiet board', () => {
       ['app-131-cache', 'idle'],
       ['app-139-auth', 'waiting'],
       ['app-150-migrate', 'idle']
+    ])
+  })
+})
+
+describe('the report', () => {
+  it('lists each session as the night left it: two pull requests, a question, one working, one idle', () => {
+    expect(REPORT_ROWS).toEqual([
+      { name: 'app-142-retry', project: 'uploader', dot: 'good', tag: '#88', tagTone: 'accent' },
+      {
+        name: 'app-145-backoff-docs',
+        project: 'uploader',
+        dot: 'good',
+        tag: '#89',
+        tagTone: 'accent'
+      },
+      {
+        name: 'app-139-auth',
+        project: 'billing',
+        dot: 'attention',
+        tag: 'needs input',
+        tagTone: 'attention'
+      },
+      {
+        name: 'app-150-migrate',
+        project: 'billing',
+        dot: 'accent',
+        tag: 'working',
+        tagTone: 'fg-muted'
+      },
+      {
+        name: 'app-131-cache',
+        project: 'uploader',
+        dot: 'neutral',
+        tag: 'idle',
+        tagTone: 'fg-faint'
+      }
+    ])
+  })
+
+  it('counts two pull requests on the rail while it is open, then one', () => {
+    expect([0, 20, 60].map((t) => [dayState(t).texts.prs, dayState(t).texts.changes])).toEqual([
+      ['2', '3'],
+      ['1', '3'],
+      ['1', '2']
     ])
   })
 })
@@ -121,8 +161,14 @@ describe('the sidebar', () => {
 
   it('shows the Quiet row until the unlock, then a countdown from 19:59, three seconds a tick', () => {
     expect(dayState(99).flags.unlocked).toBe(false)
-    expect(dayState(100)).toMatchObject({ flags: { unlocked: true }, countdown: '19:59' })
-    expect(dayState(113)).toMatchObject({ flags: { unlocked: true }, countdown: '19:20' })
+    expect(dayState(100)).toMatchObject({
+      flags: { unlocked: true },
+      texts: { countdown: '19:59' }
+    })
+    expect(dayState(113)).toMatchObject({
+      flags: { unlocked: true },
+      texts: { countdown: '19:20' }
+    })
     expect(dayState(114).flags.unlocked).toBe(false)
   })
 
@@ -140,24 +186,24 @@ describe('the sidebar', () => {
 describe('the terminal', () => {
   it('is empty while the report is open', () => {
     expect(dayState(0).flags.report).toBe(true)
-    expect(texts(0)).toEqual([])
+    expect(lineTexts(0)).toEqual([])
   })
 
   it('draws Claude Code: its header, the prompt, then tool calls and their results', () => {
-    expect(dayState(20).terminal.lines.slice(0, 5)).toEqual([
+    expect(dayState(20).lines.slice(0, 5)).toEqual([
       { kind: 'title', pre: ' ▐▛███▜▌  ', text: 'Claude Code v2.1' },
       { kind: 'logo', pre: '▝▜█████▛▘ ', text: 'Opus 5.5 · Claude Max' },
       { kind: 'logo', pre: '  ▘▘ ▝▝   ', text: '~/.que/worktrees/uploader/app-142-retry' },
       { kind: 'blank', pre: '', text: ' ' },
       { kind: 'user', pre: '> ', text: 'Add retry with backoff to the uploader' }
     ])
-    expect(texts(20).at(-1)).toBe("I'll wrap the upload in a retry with backoff.")
-    expect(dayState(32).terminal.lines.at(-1)).toEqual({
+    expect(lineTexts(20).at(-1)).toBe("I'll wrap the upload in a retry with backoff.")
+    expect(dayState(32).lines.at(-1)).toEqual({
       kind: 'tool',
       pre: '⏺ ',
       text: 'Bash(npm test)'
     })
-    expect(dayState(39).terminal.lines.at(-1)).toEqual({
+    expect(dayState(39).lines.at(-1)).toEqual({
       kind: 'result',
       pre: '  ⎿  ',
       text: '42 passed'
@@ -166,28 +212,40 @@ describe('the terminal', () => {
 
   it('asks for permission at noon, then runs the migration', () => {
     expect(dayState(71).flags).toMatchObject({ permission: true, status: false })
-    expect(texts(71).at(-1)).toBe('Updated with 31 additions and 12 removals')
+    expect(lineTexts(71).at(-1)).toBe('Updated with 31 additions and 12 removals')
     expect(dayState(72).flags).toMatchObject({ permission: false, status: true })
-    expect(texts(72).slice(-2)).toEqual(['Bash(npm run migrate)', 'Migrated 3 tables'])
-    expect(dayState(72).terminal).toMatchObject({ verb: 'Brewing…', seconds: 1 })
+    expect(lineTexts(72).slice(-2)).toEqual(['Bash(npm run migrate)', 'Migrated 3 tables'])
+    expect(dayState(72).texts).toMatchObject({
+      spin: '· Brewing…',
+      seconds: ' (1s · esc to interrupt)'
+    })
   })
 
   it('types the question during the unlock, then answers it', () => {
-    expect(dayState(100).terminal.input).toBe('Did t')
-    expect(dayState(105).terminal.input).toBe('Did the checks on #88 pass?')
-    expect(dayState(106).terminal.input).toBe('')
-    expect(texts(106).at(-1)).toBe('Did the checks on #88 pass?')
-    expect(texts(108).slice(-4)).toEqual([
+    expect(dayState(100).texts.input).toBe('Did t')
+    expect(dayState(105).texts.input).toBe('Did the checks on #88 pass?')
+    expect(dayState(106).texts.input).toBe('')
+    expect(lineTexts(106).at(-1)).toBe('Did the checks on #88 pass?')
+    expect(lineTexts(108).slice(-4)).toEqual([
       'Bash(gh pr checks 88)',
       'build   pass',
       'test    pass',
       'lint    pass'
     ])
-    expect(texts(113).at(-1)).toBe('All three checks pass on #88.')
+    expect(lineTexts(113).at(-1)).toBe('All three checks pass on #88.')
   })
 
-  it('spins through six glyphs, one a tick', () => {
-    expect([20, 21, 22, 23, 24, 25, 26].map((t) => dayState(t).terminal.spinner)).toEqual([
+  it('spins through six glyphs, one a tick, counting the seconds the session has been going', () => {
+    expect(dayState(20).texts).toMatchObject({
+      spin: '✳ Noodling…',
+      seconds: ' (20s · esc to interrupt)'
+    })
+    expect(dayState(40).texts.seconds).toBe(' (40s · esc to interrupt)')
+    expect(dayState(106).texts).toMatchObject({
+      spin: '✻ Pondering…',
+      seconds: ' (1s · esc to interrupt)'
+    })
+    expect([20, 21, 22, 23, 24, 25, 26].map((t) => dayState(t).texts.spin[0])).toEqual([
       '✳',
       '✶',
       '✻',
@@ -200,6 +258,12 @@ describe('the terminal', () => {
 })
 
 describe('the scene', () => {
+  it('captions each step', () => {
+    expect(STEPS.map((_, step) => dayState(step * TICKS_PER_STEP).texts.caption)).toEqual(
+      STEPS.map((step) => step.caption)
+    )
+  })
+
   it('is the office until 10:14 PM, then home', () => {
     expect(ticks.filter((t) => dayState(t).flags.home)).toEqual(
       Array.from({ length: 20 }, (_, i) => 100 + i)
