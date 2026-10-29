@@ -1,0 +1,95 @@
+name: Pages
+
+# Builds the site and deploys it to GitHub Pages. A push to main, the daily run
+# (so a new que release reaches the site within a day) and a manual run deploy;
+# a pull request only lints, tests, checks and builds. The download link, the
+# reference pages and the GIF come from the latest que release at build time.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # Deploys run one at a time and are never cancelled. A pull request never deploys, so it
+  # gets a group of its own and cannot push a waiting deploy out of the queue.
+  group: ${{ github.event_name == 'pull_request' && format('pages-{0}', github.ref) || 'pages' }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Check
+        # precheck fetches the latest que release; the token keeps the API from rate limiting it.
+        run: npm run check
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Configure Pages
+        if: github.event_name != 'pull_request'
+        id: pages
+        uses: actions/configure-pages@v6
+
+      - name: Build for Pages
+        if: github.event_name != 'pull_request'
+        # Uses the release data the check step fetched. The outputs reach the shell as
+        # environment variables, never interpolated into the script.
+        env:
+          SITE: ${{ steps.pages.outputs.origin }}
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+        run: npx astro build --site "$SITE" --base "$BASE_PATH"
+
+      - name: Build
+        if: github.event_name == 'pull_request'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: npm run build
+
+      - name: Upload the site
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deploy:
+    name: Deploy
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
