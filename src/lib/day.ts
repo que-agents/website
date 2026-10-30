@@ -9,7 +9,7 @@ export const TICKS_PER_STEP = 20
 export interface Step {
   /** The time of day, for the screen-reader list. */
   time: string
-  /** The line under the animation. */
+  /** The caption in the scene's text box. */
   caption: string
   /** What the app shows, in one sentence, for the screen-reader list. */
   shows: string

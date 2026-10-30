@@ -1,9 +1,9 @@
 ---
-// The home page's "a day with que": a caption above a pixel scene beside que's
-// window, and buttons to pause it and step through it. src/lib/day.ts decides
-// what every tick shows; the script below only writes that into this markup,
-// which is rendered at tick 0 so the page shows a whole frame before the script
-// runs.
+// The home page's "a day with que": a pixel scene told by a caption in a text
+// box at its top, beside que's window, and buttons to pause it and step
+// through it. src/lib/day.ts decides what every tick shows; the script below
+// only writes that into this markup, which is rendered at tick 0 so the page
+// shows a whole frame before the script runs.
 //
 // The scene and the window are drawn at their natural size, 440 × 460 and
 // 650 × 460, and scaled down as a whole when there is less room (see .stage).
@@ -52,16 +52,6 @@ const ICONS = {
       ))
     }
   </ol>
-
-  <p class="caption" aria-hidden="true" data-pagefind-ignore>
-    {
-      STEPS.map((step, i) => (
-        <span data-caption data-current={presence(i === initial.step)}>
-          {step.caption}
-        </span>
-      ))
-    }
-  </p>
 
   <div class="stage" aria-hidden="true" data-pagefind-ignore>
     <div class="panels">
@@ -133,6 +123,16 @@ const ICONS = {
           <div class="home">
             {HOME_FRONT.map((px) => <div class:list={['px', px.cls]} style={place(px)} />)}
           </div>
+
+          <p class="caption">
+            {
+              STEPS.map((step, i) => (
+                <span data-caption data-current={presence(i === initial.step)}>
+                  {step.caption}
+                </span>
+              ))
+            }
+          </p>
         </div>
       </div>
 
@@ -656,7 +656,7 @@ const ICONS = {
 <style>
   .day {
     /* que's dark tokens, fixed on purpose (the animation stays dark in both site themes), not the site theme's variables.
-       The caption and the pause button sit on the page, so they take the site's. */
+       The pause button sits on the page, so it takes the site's. */
     --bg: #181818;
     --bg-side: #111111;
     --bg-active: #2c2c2c;
@@ -737,16 +737,11 @@ const ICONS = {
     gap: calc(20 * var(--unit));
   }
   /* A slot clips its panel, which overflows it until the script has scaled it,
-     so the page never scrolls sideways. The window's shadow is the slot's, so
-     nothing clips it. */
+     so the page never scrolls sideways. */
   .slot {
     position: relative;
     flex: none;
     overflow: hidden;
-  }
-  .slot-app {
-    border-radius: calc(10px * var(--scale, 1));
-    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
   }
   .slot-scene {
     width: calc(440 * var(--unit));
@@ -1419,22 +1414,30 @@ const ICONS = {
     margin-bottom: 10px;
   }
 
-  /* The caption, above the animation. It tells the story, so it is the loudest
-     text in it. Every step's caption sits in the same cell, so the tallest
-     sets the height and the animation below never moves; only the current one
-     shows, fading in. */
+  /* The caption: a text box on the empty wall at the top of the scene, drawn
+     in the scene's 5px pixels. The border is four shadows a pixel out from
+     each side, so its corners are notched like the rest of the drawing. Every
+     step's caption sits in the same cell, so the tallest sets the box's
+     height; only the current one shows, fading in. */
   .caption {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
     display: grid;
-    width: 100%;
-    max-width: 760px;
-    margin: 0 auto;
-    text-align: center;
-    text-wrap: balance;
-    font-size: clamp(1.25rem, 1rem + 1vw, 1.625rem);
-    font-weight: 500;
-    line-height: 1.3;
-    letter-spacing: -0.01em;
-    color: var(--sl-color-white);
+    margin: 0;
+    padding: 10px 15px;
+    background: var(--bg-side);
+    box-shadow:
+      0 -5px var(--fg-secondary),
+      0 5px var(--fg-secondary),
+      -5px 0 var(--fg-secondary),
+      5px 0 var(--fg-secondary);
+    font-family: var(--mono);
+    font-size: 17px;
+    line-height: 1.45;
+    color: var(--fg);
+    text-wrap: pretty;
   }
   .caption span {
     grid-area: 1 / 1;
