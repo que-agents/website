@@ -61,6 +61,7 @@ describe('pickRelease', () => {
         }
       ]
     }
+
     expect(pickRelease(beta).version).toBe('0.3.0-beta.1')
   })
 
@@ -69,6 +70,7 @@ describe('pickRelease', () => {
       ...latest,
       assets: latest.assets.filter((asset) => !asset.name.endsWith('.dmg'))
     }
+
     expect(() => pickRelease(noDmg)).toThrow('release v0.2.0 has no asset ending in -arm64.dmg')
   })
 
@@ -125,6 +127,7 @@ describe('mapLinks', () => {
       '',
       '[ref]: design.md'
     ].join('\n')
+
     expect(mapLinks(markdown, upper)).toBe(
       ['See [the CLI](CLI.MD) and ![a gif](IMAGES/A.GIF "Quiet").', '', '[ref]: DESIGN.MD'].join(
         '\n'
@@ -149,6 +152,7 @@ describe('mapLinks', () => {
       '[^1]: a footnote',
       '[after](z.md)'
     ].join('\n')
+
     expect(mapLinks(markdown, upper)).toBe(
       [
         'Write `[x](y.md)` literally.',
@@ -172,6 +176,7 @@ describe('mapLinks', () => {
       '~~~',
       '[z](z.md)'
     ].join('\n')
+
     expect(mapLinks(markdown, upper)).toBe(
       ['```sh', 'que doctor', '```', '~~~text', '[x](y.md)', '~~~', '[z](Z.MD)'].join('\n')
     )

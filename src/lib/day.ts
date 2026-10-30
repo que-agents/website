@@ -90,6 +90,7 @@ const HEAD = [
   '.tttttttt.',
   '.tttttttt.'
 ]
+
 const STAND_LEGS = ['..pppppp..', '..pp..pp..', '..pp..pp..', '..pp..pp..', '.kkk.kkk..']
 const WALK_LEGS = ['..pppppp..', '.pp....pp.', '.pp....pp.', '.pp....pp.', 'kkk....kk.']
 const SIT_LEGS = ['pppppppp..', 'pppppppp..', 'pp........', 'pp........', 'kkk.......']
@@ -107,6 +108,7 @@ function boxShadow(rows: string[], palette: Record<string, string>): string {
   rows.forEach((row, y) => {
     for (let x = 0; x < row.length; x++) {
       const colour = palette[row[x]]
+
       if (colour) {
         out.push(`${(x + 1) * 5}px ${(y + 1) * 5}px 0 var(--seam, 0px) ${colour}`)
       }
@@ -278,18 +280,23 @@ const SESSIONS: readonly Session[] = [
 
 function statusOf(name: string, step: number, beat: number): Status {
   const planned = session(name).plan[step]
-  if (typeof planned === 'string') {
+
+  if (!Array.isArray(planned)) {
     return planned
   }
+
   const [before, after, at] = planned
+
   return beat < at ? before : after
 }
 
 function session(name: string): Session {
   const found = SESSIONS.find((s) => s.name === name)
+
   if (!found) {
     throw new Error(`no session ${name}`)
   }
+
   return found
 }
 
@@ -324,13 +331,11 @@ const IN_FRONT = [
  * The quiet board at the steps that show it: its label, the beat it appears
  * at, the time it shows n beats later, and when the quiet ends.
  */
-const BOARDS: Partial<
-  Record<number, { label: string; from: number; now: (n: number) => string; until: string }>
-> = {
-  2: { label: 'QUIET', from: 4, now: (n) => `11:${pad(n * 3)}`, until: '12:00' },
-  4: { label: 'QUIET HOURS', from: 4, now: (n) => `18:${pad(n * 3)}`, until: '08:00' },
-  5: { label: 'QUIET HOURS', from: 14, now: (n) => `22:${pad(28 + n)}`, until: '08:00' }
-}
+const BOARDS = new Map([
+  [2, { label: 'QUIET', from: 4, now: (n: number) => `11:${pad(n * 3)}`, until: '12:00' }],
+  [4, { label: 'QUIET HOURS', from: 4, now: (n: number) => `18:${pad(n * 3)}`, until: '08:00' }],
+  [5, { label: 'QUIET HOURS', from: 14, now: (n: number) => `22:${pad(28 + n)}`, until: '08:00' }]
+])
 
 /** Claude Code's spinner line at each step: its verb, and the beat its seconds count from. */
 const THINKING: readonly { verb: string; since: number }[] = [
@@ -438,6 +443,7 @@ const say = (text: string) => line('say', '⏺ ', text)
 const tool = (text: string) => line('tool', '⏺ ', text)
 const result = (text: string) => line('result', '  ⎿  ', text)
 const more = (text: string) => line('more', '     ', text)
+
 const header = (path: string) => [
   line('title', ' ▐▛███▜▌  ', 'Claude Code v2.1'),
   line('logo', '▝▜█████▛▘ ', 'Opus 5.5 · Claude Max'),
@@ -460,6 +466,7 @@ const RETRY = [
   tool('Bash(npm test)'),
   result('42 passed')
 ]
+
 const RETRY_DONE = [
   ...RETRY,
   blank(),
@@ -468,6 +475,7 @@ const RETRY_DONE = [
   blank(),
   say('Opened #88. Retries back off from 1s to 30s.')
 ]
+
 const AUTH = [
   ...header('~/.que/worktrees/billing/app-139-auth'),
   blank(),
@@ -479,6 +487,7 @@ const AUTH = [
   tool('Update(src/billing/invoices.ts)'),
   result('Updated with 31 additions and 12 removals')
 ]
+
 const QUESTION = 'Did the checks on #88 pass?'
 const SPINNER = ['·', '✢', '✳', '✶', '✻', '✽']
 
@@ -506,11 +515,14 @@ export function dayState(tick: number): DayState {
   let walkSeconds = 0
   // A walk takes as long as the legs move: so many ticks of the walking pose.
   const walk = (ticks: number) => (ticks * TICK_MS) / 1000
+
   if (step === 1) {
     pose = odd ? 'reach' : 'sit'
   }
+
   if (step === 2) {
     walkSeconds = walk(6)
+
     if (k < 4) {
       pose = 'reach'
     } else {
@@ -519,30 +531,35 @@ export function dayState(tick: number): DayState {
       pose = k < 10 && odd ? 'walk' : 'stand'
     }
   }
+
   if (step === 3) {
     walkSeconds = walk(6)
+
     if (k < 6) {
       pose = odd ? 'walk' : 'stand'
     } else {
       pose = odd ? 'reach' : 'sit'
     }
   }
+
   if (step === 4) {
     walkSeconds = walk(10)
+
     if (k >= 4) {
       left = 470
       facing = 'right'
       pose = odd ? 'walk' : 'stand'
     }
   }
+
   if (step === 5) {
     left = 132
     bottom = 80
   }
 
   // Steps without a board keep the last board's text; it is hidden.
-  const quiet = BOARDS[step]
-  const shown = quiet ?? BOARDS[5]!
+  const quiet = BOARDS.get(step)
+  const shown = quiet ?? BOARDS.get(5)!
   const board = quiet !== undefined && k >= quiet.from
   const unlocked = step === 5 && k < 14
   const secondsLeft = 20 * 60 - 1 - k * 3
@@ -550,6 +567,7 @@ export function dayState(tick: number): DayState {
   const sessions = SESSIONS.map(({ name, project }): SessionRow => {
     const status = statusOf(name, step, k)
     const selected = name === IN_FRONT[step]
+
     return {
       name,
       project,
@@ -565,34 +583,44 @@ export function dayState(tick: number): DayState {
       word: status === 'working' ? 'working' : status === 'needs' ? 'waiting' : 'idle'
     }
   })
+
   const count = (['working', 'waiting', 'idle'] as const)
-    .map((word) => [sessions.filter((row) => row.word === word).length, word] as const)
-    .filter(([n]) => n > 0)
-    .map(([n, word]) => `${n} ${word}`)
+    .flatMap((word) => {
+      const n = sessions.filter((row) => row.word === word).length
+
+      return n > 0 ? [`${n} ${word}`] : []
+    })
     .join(' · ')
 
   let lines: TermLine[] = []
   let input = ''
+
   if (step === 1) {
     lines = RETRY.slice(0, k < 2 ? 7 : k < 5 ? 9 : k < 9 ? 12 : k < 13 ? 15 : 17)
   }
+
   if (step === 2) {
     lines = RETRY
   }
+
   if (step === 3) {
     lines =
       k < 12 ? AUTH : [...AUTH, blank(), tool('Bash(npm run migrate)'), result('Migrated 3 tables')]
   }
+
   if (step === 4) {
     lines = RETRY_DONE
   }
+
   if (step === 5) {
     lines = RETRY_DONE
+
     if (k < 6) {
       input = QUESTION.slice(0, Math.ceil((QUESTION.length * (k + 1)) / 6))
     } else {
       lines = [...lines, blank(), user(QUESTION)]
     }
+
     if (k >= 8) {
       lines = [
         ...lines,
@@ -603,6 +631,7 @@ export function dayState(tick: number): DayState {
         more('lint    pass')
       ]
     }
+
     if (k >= 11) {
       lines = [...lines, blank(), say('All three checks pass on #88.')]
     }

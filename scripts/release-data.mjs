@@ -20,14 +20,18 @@ export const QUE_REPO = 'que-agents/que'
  */
 export function pickRelease(json) {
   const tag = json?.tag_name
+
   if (typeof tag !== 'string' || tag === '') {
     throw new Error('the release has no tag_name')
   }
+
   const assets = Array.isArray(json.assets) ? json.assets : []
+
   const dmg = assets.find(
     (/** @type {any} */ asset) =>
       typeof asset?.name === 'string' && asset.name.endsWith('-arm64.dmg')
   )
+
   if (!dmg) {
     throw new Error(`release ${tag} has no asset ending in -arm64.dmg`)
   }
@@ -63,14 +67,17 @@ export function rewriteLink(target, { fromPath, tag, image = false }) {
   ) {
     return target
   }
+
   const hashAt = target.indexOf('#')
   const pathPart = hashAt === -1 ? target : target.slice(0, hashAt)
   const hash = hashAt === -1 ? '' : target.slice(hashAt)
   const resolved = new URL(pathPart, `https://que.invalid/${fromPath}`).pathname.slice(1)
   const page = SITE_PAGES[resolved]
+
   if (page && !image) {
     return page + hash
   }
+
   const base = image
     ? `https://raw.githubusercontent.com/${QUE_REPO}/${tag}/`
     : `https://github.com/${QUE_REPO}/blob/${tag}/`
@@ -81,6 +88,7 @@ export function rewriteLink(target, { fromPath, tag, image = false }) {
 // An inline code span (left as it is), or an inline link or image whose label
 // may hold code or one level of brackets.
 const INLINE = /(`+)[\s\S]*?\1|(!?)\[((?:[^[\]\n]|\[[^\]\n]*\])*)\]\(([^)\s]+)((?:\s+"[^"]*")?)\)/g
+
 // A reference definition, `[label]: target`, but not a footnote.
 const REFERENCE = /^( {0,3}\[(?!\^)[^\]\n]+\]:[ \t]*)(\S+)/gm
 const FENCE = /^ {0,3}(`{3,}|~{3,})/
@@ -99,25 +107,31 @@ export function mapLinks(markdown, fn) {
         ticks ? match : `${bang}[${label}](${fn(target, bang === '!')}${title})`
       )
       .replace(REFERENCE, (_, head, target) => head + fn(target, false))
+
   /** @type {string[]} */
   const out = []
   /** @type {string[]} */
   let pending = []
+
   const flush = () => {
     if (pending.length > 0) {
       out.push(prose(pending.join('\n')))
       pending = []
     }
   }
+
   let fence = ''
+
   for (const line of markdown.split('\n')) {
     const opener = line.match(FENCE)?.[1]
+
     if (fence === '' && opener) {
       flush()
       fence = opener
       out.push(line)
     } else if (fence !== '') {
       out.push(line)
+
       if (line.trim().startsWith(fence) && line.trim().replace(/[`~]/g, '') === '') {
         fence = ''
       }
@@ -125,6 +139,7 @@ export function mapLinks(markdown, fn) {
       pending.push(line)
     }
   }
+
   flush()
 
   return out.join('\n')
@@ -147,6 +162,7 @@ export function transformDoc(markdown, { path, title, description, release }) {
   body = mapLinks(body, (target, image) =>
     rewriteLink(target, { fromPath: path, tag: release.tag, image })
   )
+
   const frontmatter = [
     '---',
     `title: ${JSON.stringify(title)}`,
@@ -155,6 +171,7 @@ export function transformDoc(markdown, { path, title, description, release }) {
     'editUrl: false',
     '---'
   ].join('\n')
+
   const note =
     `_Generated from [que ${release.version}](${release.url}). ` +
     `To change it, edit que's source in [${QUE_REPO}](https://github.com/${QUE_REPO})._`

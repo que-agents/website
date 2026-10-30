@@ -10,6 +10,7 @@
  */
 export function withBase(url, base) {
   const prefix = base.replace(/\/+$/, '')
+
   if (
     prefix === '' ||
     !url.startsWith('/') ||
@@ -37,22 +38,27 @@ export function baseLinks() {
         const processor = /** @type {{ name: string, options: { mdastPlugins: object[] } }} */ (
           config.markdown.processor
         )
+
         if (processor.name !== 'satteri') {
           logger.warn(
             `Markdown links will not get the base path: the "${processor.name}" processor is not supported.`
           )
+
           return
         }
+
         /**
          * @param {{ url: string }} node
          * @param {{ setProperty: (node: { url: string }, key: 'url', value: string) => void }} ctx
          */
         const rewrite = (node, ctx) => {
           const url = withBase(node.url, config.base)
+
           if (url !== node.url) {
             ctx.setProperty(node, 'url', url)
           }
         }
+
         processor.options.mdastPlugins.push({
           name: 'que-base-links',
           link: rewrite,
