@@ -1,0 +1,10 @@
+# Replaces Semgrep's built-in ignore list (which skips tests/); tests/ is scanned here.
+# Only build output, dependencies and files fetched at build time are listed.
+dist/
+.astro/
+node_modules/
+src/data/release.json
+src/content/docs/reference/
+public/images/quiet-mode.gif
+# Vendored lint rules: they run inside oxlint at lint time, never on the site.
+tools/oxlint/anti-slop/

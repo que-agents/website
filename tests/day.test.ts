@@ -62,6 +62,7 @@ describe('the steps', () => {
 describe('the quiet board', () => {
   const board = (t: number) => {
     const { boardLabel, boardNow, boardUntil, boardCount } = dayState(t).texts
+
     return [boardLabel, boardNow, boardUntil, boardCount]
   }
 
@@ -152,6 +153,7 @@ describe('the sidebar', () => {
       dayState(t)
         .sessions.filter((row) => row.selected)
         .map((row) => row.name)
+
     expect(selected(0)).toEqual([])
     expect(selected(20)).toEqual(['app-142-retry'])
     expect(selected(60)).toEqual(['app-139-auth'])
@@ -173,8 +175,10 @@ describe('the sidebar', () => {
   it('points at 1h and presses it before the meeting', () => {
     const quiet = (t: number) => {
       const { pointer, pressed } = dayState(t).flags
+
       return { pointer, pressed }
     }
+
     expect(quiet(40)).toEqual({ pointer: true, pressed: false })
     expect(quiet(42)).toEqual({ pointer: true, pressed: true })
     expect(quiet(44)).toEqual({ pointer: false, pressed: false })
@@ -281,6 +285,7 @@ describe('the scene', () => {
       const block = String.raw`\d+px \d+px 0 var\(--seam, 0px\) #[0-9a-f]{6}`
       expect(shadow).toMatch(new RegExp(`^(${block}, )+${block}$`))
     }
+
     expect(SPRITES.stand.startsWith('15px 5px 0 var(--seam, 0px) #3b2a1e')).toBe(true)
   })
 })

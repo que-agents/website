@@ -30,6 +30,7 @@ const DOCS = [
       "Every key of que's config.toml and a repository's que.toml, and the environment variables que reads."
   }
 ]
+
 const GIF = { path: 'docs/images/quiet-mode.gif', out: 'public/images/quiet-mode.gif' }
 const RELEASE_OUT = 'src/data/release.json'
 const OUTPUTS = [RELEASE_OUT, ...DOCS.map((doc) => doc.out), GIF.out]
@@ -43,6 +44,7 @@ async function get(url, headers = {}) {
     headers: { 'User-Agent': 'que-website-build', ...headers },
     signal: AbortSignal.timeout(30_000)
   })
+
   if (!res.ok) {
     throw new Error(`GET ${url}: ${res.status} ${res.statusText}`)
   }
@@ -53,19 +55,24 @@ async function get(url, headers = {}) {
 async function fetchAll() {
   /** @type {Record<string, string>} */
   const apiHeaders = { Accept: 'application/vnd.github+json' }
+
   if (process.env.GITHUB_TOKEN) {
     apiHeaders.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`
   }
+
   const latest = await get(`https://api.github.com/repos/${QUE_REPO}/releases/latest`, apiHeaders)
   const release = pickRelease(await latest.json())
+
   const raw = (/** @type {string} */ path) =>
     `https://raw.githubusercontent.com/${QUE_REPO}/${release.tag}/${path}`
+
   const pages = await Promise.all(
     DOCS.map(async (doc) => ({
       out: doc.out,
       content: transformDoc(await (await get(raw(doc.path))).text(), { ...doc, release })
     }))
   )
+
   const gif = Buffer.from(await (await get(raw(GIF.path))).arrayBuffer())
 
   return { release, pages, gif }
@@ -85,9 +92,11 @@ try {
   // Everything is fetched before anything is written, so the outputs always come from one release.
   const { release, pages, gif } = await fetchAll()
   await write(RELEASE_OUT, `${JSON.stringify(release, null, 2)}\n`)
+
   for (const page of pages) {
     await write(page.out, page.content)
   }
+
   await write(GIF.out, gif)
   console.log(
     `fetch-release: que ${release.version} (${release.tag}), ${OUTPUTS.length} files written`
@@ -95,6 +104,7 @@ try {
 } catch (error) {
   const reason = error instanceof Error ? error.message : String(error)
   const missing = OUTPUTS.filter((path) => !existsSync(join(root, path)))
+
   if (missing.length === 0) {
     console.warn(
       `fetch-release: could not fetch the latest que release (${reason}); keeping the previous files.`

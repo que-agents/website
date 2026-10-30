@@ -18,7 +18,8 @@ npm run dev       # the site with hot reload, at http://localhost:4321
 | `npm run build`   | Fetch the latest que release, then build the site into `dist/`     |
 | `npm run check`   | Fetch the latest que release, then type-check with `astro check`   |
 | `npm test`        | Unit tests (Vitest): the release script, links, the home animation |
-| `npm run lint`    | Check formatting with oxfmt (`npm run format` writes it)           |
+| `npm run lint`    | Lint with oxlint, then check formatting with oxfmt                 |
+| `npm run format`  | Format with oxfmt                                                  |
 | `npm run preview` | Serve the built `dist/`                                            |
 
 ## Where things live
@@ -32,6 +33,7 @@ npm run dev       # the site with hot reload, at http://localhost:4321
 | `src/styles/theme.css` | que's colours and type, mapped onto Starlight's theme                     |
 | `scripts/`             | `fetch-release.mjs`, which pulls the release data described below         |
 | `tests/`               | Unit tests                                                                |
+| `tools/oxlint/`        | The anti-slop oxlint rules, vendored from que; config in `.oxlintrc.json` |
 
 ## What comes from que
 
@@ -51,7 +53,9 @@ rate-limits you.
 
 `.github/workflows/pages.yml` builds the site and deploys it to GitHub Pages on every push to
 `main`, once a day (so a new que release reaches the site without a commit here), and when run by
-hand. A pull request runs the same lint, tests, check and build, and deploys nothing.
+hand. A pull request builds and deploys nothing. Lint, Typecheck, Unit tests and Semgrep run in
+their own workflows on every pull request and push to `main`, and a pull request cannot merge
+until they and the build pass.
 
 ## Contributing
 

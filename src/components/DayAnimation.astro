@@ -24,13 +24,16 @@ import WorkingMark from './WorkingMark.astro'
 
 const initial = dayState(0)
 const { person, texts } = initial
+
 const flags = Object.fromEntries(
   Object.entries(initial.flags)
     .filter(([, on]) => on)
     .map(([name]) => [`data-${name}`, ''])
 )
+
 const presence = (on: boolean) => (on ? '' : undefined)
-const length = (size: Px['w']) => (typeof size === 'number' ? `${size}px` : size)
+const length = (size: Px['w']) => (size === '100%' ? size : `${size}px`)
+
 const place = (px: Px) =>
   `left: ${px.x}px; bottom: ${px.y}px; width: ${length(px.w)}; height: ${length(px.h)}` +
   (px.bg ? `; background: ${px.bg}` : '')
@@ -454,23 +457,29 @@ const ICONS = {
   function mount(root: HTMLElement) {
     const find = (scope: Element, selector: string): HTMLElement => {
       const el = scope.querySelector<HTMLElement>(selector)
+
       if (!el) {
         throw new Error(`DayAnimation: nothing matches ${selector}`)
       }
+
       return el
     }
+
     const ref = (name: string) => find(root, `[data-ref="${name}"]`)
     const person = ref('person')
     const sprite = ref('sprite')
     const lines = ref('lines')
     const deskDots = [...root.querySelectorAll<HTMLElement>('[data-ref="desk-dot"]')]
+
     const texts = new Map(
       [...root.querySelectorAll<HTMLElement>('[data-text]')].map((el) => [el.dataset.text, el])
     )
+
     const sessions = new Map(
       [...root.querySelectorAll<HTMLElement>('.side-row')].map((side) => {
         const name = side.dataset.session ?? ''
         const board = find(root, `.board-row[data-session="${name}"]`)
+
         return [
           name,
           {
@@ -483,31 +492,39 @@ const ICONS = {
         ]
       })
     )
+
     const captions = [...root.querySelectorAll<HTMLElement>('[data-caption]')]
     let drawnLines = ''
 
     // What each element was last given, so a tick touches the page only where
     // something changed.
     const written = new WeakMap<Element, Map<string, string | null>>()
+
     const changed = (el: Element, key: string, value: string | null) => {
       const last = written.get(el) ?? new Map<string, string | null>()
       written.set(el, last)
+
       if (last.has(key) && last.get(key) === value) {
         return false
       }
+
       last.set(key, value)
+
       return true
     }
+
     const setText = (el: HTMLElement, value: string) => {
       if (changed(el, 'text', value)) {
         el.textContent = value
       }
     }
+
     const setStyle = (el: HTMLElement, property: string, value: string) => {
       if (changed(el, `style ${property}`, value)) {
         el.style.setProperty(property, value)
       }
     }
+
     const setAttr = (el: Element, name: string, value: string | null) => {
       if (changed(el, `attr ${name}`, value)) {
         if (value === null) {
@@ -517,6 +534,7 @@ const ICONS = {
         }
       }
     }
+
     const presence = (on: boolean) => (on ? '' : null)
 
     function lineElement(line: TermLine) {
@@ -530,6 +548,7 @@ const ICONS = {
       text.className = 'text'
       text.textContent = line.text
       el.append(pre, text)
+
       return el
     }
 
@@ -537,9 +556,12 @@ const ICONS = {
       for (const [name, on] of Object.entries(s.flags)) {
         setAttr(root, `data-${name}`, presence(on))
       }
+
       captions.forEach((caption, i) => setAttr(caption, 'data-current', presence(i === s.step)))
+
       for (const [name, value] of Object.entries(s.texts)) {
         const el = texts.get(name)
+
         if (el) {
           setText(el, value)
         }
@@ -555,9 +577,11 @@ const ICONS = {
 
       for (const row of s.sessions) {
         const els = sessions.get(row.name)
+
         if (!els) {
           continue
         }
+
         setAttr(els.side, 'data-working', presence(row.working))
         setAttr(els.side, 'data-selected', presence(row.selected))
         setStyle(els.dot, 'background', `var(--${row.dot})`)
@@ -567,6 +591,7 @@ const ICONS = {
       }
 
       const key = s.lines.map((line) => `${line.kind} ${line.pre}${line.text}`).join('\n')
+
       if (key !== drawnLines) {
         drawnLines = key
         lines.replaceChildren(...s.lines.map(lineElement))
@@ -587,24 +612,29 @@ const ICONS = {
       tick = t
       draw(dayState(t))
     }
+
     const stop = () => {
       window.clearInterval(timer)
       timer = undefined
     }
+
     const sync = () => {
       const run = !paused && onScreen && !document.hidden
+
       if (run && timer === undefined) {
         timer = window.setInterval(() => show((tick + 1) % LOOP_TICKS), TICK_MS)
       } else if (!run && timer !== undefined) {
         stop()
       }
     }
+
     const setPaused = (value: boolean) => {
       paused = value
       root.toggleAttribute('data-paused', paused)
       play.setAttribute('aria-label', paused ? 'Play the animation' : 'Pause the animation')
       sync()
     }
+
     const jump = (step: number) => {
       stop()
       show(stepTick(step, paused))
@@ -614,6 +644,7 @@ const ICONS = {
     // Stepping by hand says where it landed, for screen readers; the clock's own
     // steps stay quiet.
     const announce = find(root, '[data-announce]')
+
     const stepBy = (by: number) => {
       const to = (stepOf(tick) + by + STEPS.length) % STEPS.length
       jump(to)
@@ -625,6 +656,7 @@ const ICONS = {
     find(root, 'button[data-next]').addEventListener('click', () => stepBy(1))
     reduced.addEventListener('change', () => {
       setPaused(reduced.matches)
+
       if (paused) {
         jump(stepOf(tick))
       }
@@ -646,6 +678,7 @@ const ICONS = {
         slot.style.setProperty('--seam', Math.abs(scale - 1) < 0.001 ? '0px' : '0.5px')
       }
     })
+
     root.querySelectorAll('[data-slot]').forEach((slot) => fit.observe(slot))
 
     setPaused(paused)

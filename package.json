@@ -22,8 +22,9 @@
     "precheck": "npm run fetch-release",
     "check": "astro check",
     "test": "vitest run",
-    "format": "oxfmt",
-    "lint": "oxfmt --check"
+    "format": "oxfmt --write --ignore-path .gitignore --ignore-path .oxfmtignore .",
+    "lint": "oxlint && oxfmt --check --ignore-path .gitignore --ignore-path .oxfmtignore .",
+    "prepare": "husky"
   },
   "dependencies": {
     "@astrojs/starlight": "^0.42.7",
@@ -31,8 +32,24 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.12",
+    "@oxlint/plugins": "1.88.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
     "oxfmt": "^0.75.0",
+    "oxlint": "1.88.0",
     "typescript": "^6.0.3",
     "vitest": "^5.0.5"
+  },
+  "lint-staged": {
+    "*.{ts,mjs,js}": [
+      "oxlint --no-error-on-unmatched-pattern",
+      "oxfmt --write --no-error-on-unmatched-pattern --ignore-path .gitignore --ignore-path .oxfmtignore"
+    ],
+    "*.astro": [
+      "oxlint --no-error-on-unmatched-pattern"
+    ],
+    "*.{css,md,mdx,json,yml,yaml}": [
+      "oxfmt --write --no-error-on-unmatched-pattern --ignore-path .gitignore --ignore-path .oxfmtignore"
+    ]
   }
 }
