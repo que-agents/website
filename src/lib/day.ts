@@ -246,7 +246,7 @@ interface Session {
    * The session's status at each step: working, done (not yet seen), seen, or
    * needs input; or [before, after, beat] when it changes during the step.
    */
-  plan: readonly (Status | readonly [Status, Status, number])[]
+  plan: readonly (Status | [Status, Status, number])[]
 }
 
 /** The sessions, in the order the sidebar (grouped by project) and the board list them. */
