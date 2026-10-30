@@ -2,8 +2,9 @@ name: Pages
 
 # Builds the site and deploys it to GitHub Pages. A push to main, the daily run
 # (so a new que release reaches the site within a day) and a manual run deploy;
-# a pull request only lints, tests, checks and builds. The download link, the
-# reference pages and the GIF come from the latest que release at build time.
+# a pull request only builds. Lint, Typecheck, Unit tests and Semgrep run in
+# their own workflows. The download link, the reference pages and the GIF come
+# from the latest que release at build time.
 
 on:
   push:
@@ -39,14 +40,11 @@ jobs:
 
       - run: npm ci
 
-      - name: Lint
-        run: npm run lint
-
-      - name: Unit tests
-        run: npm test
-
       - name: Check
-        # precheck fetches the latest que release; the token keeps the API from rate limiting it.
+        # A deploy type-checks against the release it ships: precheck fetches the latest que
+        # release, and the token keeps the API from rate limiting it. A pull request gets this
+        # from the Typecheck workflow.
+        if: github.event_name != 'pull_request'
         run: npm run check
         env:
           GITHUB_TOKEN: ${{ github.token }}

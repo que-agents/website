@@ -11,7 +11,8 @@ npm run dev
 ```
 
 Before you open a pull request, run `npm run lint`, `npm test`, `npm run check` and
-`npm run build`; CI runs the same.
+`npm run build`; CI runs the same, plus Semgrep. `npm ci` installs a pre-commit hook that runs
+oxlint and oxfmt on the files you stage.
 
 ## Writing pages
 
@@ -28,5 +29,6 @@ Before you open a pull request, run `npm run lint`, `npm test`, `npm run check` 
 
 ## Style
 
-`npm run format` formats the code and Markdown with oxfmt. The colours and type follow que's
+`npm run lint` runs oxlint, with que's anti-slop rules from `tools/oxlint/`, and checks
+formatting; `npm run format` formats the code and Markdown with oxfmt. The colours and type follow que's
 design tokens in `src/styles/theme.css`; use those rather than new colours or fonts.
